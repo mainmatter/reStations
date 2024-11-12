@@ -1,18 +1,13 @@
-# Stations
-Educational project during internal Rust sessions
+# reStations
 
+Rust-written REST-API wrapper around [trainline-eu/stations](https://github.com/trainline-eu/stations), a 'list of stations and associated metadata'. Hence the name.
 
-### Project idea: API wrapper around https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv
+This is an educational project we're working on during Mainmatter's internal Rust sessions
 
-- Clones the repo if it hasn’t been yet, or pulls the latest version on master daily if it does
-- Loads the data from stations.csv into memory
-- Exposes the data through a REST API (there might be a OSDM spec for it)
-- 
+This system consists of two applications:
+- `restations-cli`: A CLI that fetches the latest version of the `stations.csv` file in the stations repo and saves it into some not yet determined format. Could be a large (Geo)JSON blob, or maybe a SQL database.
+- `restations-server`: A REST API the serves the data saved by `restations-cli` from memory.
 
-### Potential implementations
+The initial version of `restations-server` will have the data compiled in its binary, so that it can be served and scaled trivially. This comes at the cost of needing to deploy the latest version each time the latest version of `stations.csv` gets synced, but it saves us having to put the data in a database or a persistent storage.
 
-- A lambda in AWS:
-    - All data compiled into app during build process, loaded as part of the binary.
-    - New binary generated every day. Generation process pulls the latest repo version.
-    - Spares us having to put data in a DB.
-    - Later on, support pulling the data repo daily and updating it on the fly
+Later versions may support loading the data periodically at runtime. 
