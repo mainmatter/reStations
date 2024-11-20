@@ -1,48 +1,32 @@
 use clap::{Args, Parser, Subcommand};
+use error::Error;
+use sync::SyncAction;
+
+pub mod error;
+pub mod sync;
 
 #[derive(Parser, Debug)]
 pub struct Cli {
-    
+    #[clap(flatten)]
+    common: CommonArgs,
     #[command(subcommand)]
     command: Command,
 }
 
-
+#[derive(Debug, Args)]
+pub struct CommonArgs {
+    // Add common arguments here as they come up
+}
 
 #[derive(Debug, Clone, Subcommand)]
 pub enum Command {
     Sync(SyncAction),
-    Clone,
-    Version,
 }
 
-impl Command {
-    pub fn exec(self) -> Result<(), anyhow::Error> {
-        match self {
-            Command::Sync(s) => s.exec(),
-            Command::Clone => todo!(),
-            Command::Version => todo!(),
+impl Cli {
+    pub async fn run(self) -> Result<(), Error> {
+        match self.command {
+            Command::Sync(sync_action) => sync_action.exec(self.common).await,
         }
     }
-}
-
-#[derive(Debug, Clone, Args)]
-pub struct SyncAction {
-    // todo fields
-}
-
-impl SyncAction {
-    fn exec(self) -> Result<(), anyhow::Error> {
-        // fetch github repo
-        // load csv into stationrecord, either directly or via GeoJSON for which there's a tool in the repo
-
-        todo!("this")
-    }
-}
-
-
-struct StationRecord {
-    // todo add fields from the CSV
-    // todo use CSV parser crate to parse the csv file into Vec<StationRecord>
-    // profit
 }

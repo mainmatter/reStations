@@ -1,0 +1,9 @@
+[package]
+name = "stations-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { workspace = true, features = ["macros", "http1", "tokio", "http2", "json"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
