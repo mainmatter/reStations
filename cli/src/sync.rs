@@ -3,6 +3,7 @@ use reqwest;
 use tokio::io::AsyncReadExt;
 use tokio_stream::StreamExt;
 use tokio_util::io::StreamReader;
+use stations_core::data::StationRecord;
 
 use crate::{error::Error, CommonArgs};
 
@@ -26,14 +27,28 @@ impl SyncAction {
         let mut reader = StreamReader::new(stream);
 
         // For now we just read the entire body in a string and print it
-        let mut body = String::new();
-        reader.read_to_string(&mut body).await?;
+        // let mut body = String::new();
+        // reader.read_to_string(&mut body).await?;
 
         // 2. pipe the data into https://github.com/gwierzchowski/csv-async, and deserialize to [`stations_core::data::StationRecord`]
 
+        // let mut deserializer = AsyncReaderBuilder::new()
+        //     .delimiter(b';')
+        //     .create_deserializer(reader);
+
+        let mut deserializer = csv_async::AsyncDeserializer::from_reader(reader);
+
+        let mut records = deserializer.deserialize::<StationRecord>();
+
+        while let Some(record) = records.next().await {
+            println!("{:?}", record?);
+        }
+
+
+
         // 3. pipe deserialized data into database
 
-        println!("body = {body:?}");
+        // println!("body = {body:?}");
 
         // fetch (or stream) csv from https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv
         // load csv into StationRecord, either directly or via GeoJSON for which there's a tool in the repo
