@@ -8,4 +8,7 @@ pub enum Error {
 
     #[error("Deserialization error: {0}")]
     Deserialization(#[from] csv_async::Error),
+
+    #[error("SQLite error: {0}")]
+    Sqlite(#[from] rusqlite::Error),
 }
