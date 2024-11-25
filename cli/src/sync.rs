@@ -25,12 +25,7 @@ impl SyncAction {
             // in order for the stream to be wrapped in a StreamReader
             .map(|r| r.map_err(tokio::io::Error::other));
         // Wrap the stream in a StreamReader, which implements AsyncRead, the trait csv-async is built around
-        let mut reader = StreamReader::new(stream);
-
-        // For now we just read the entire body in a string and print it
-        // let mut body = String::new();
-        // reader.read_to_string(&mut body).await?;
-        // println!("{body}");
+        let reader = StreamReader::new(stream);
 
         // 2. pipe the data into https://github.com/gwierzchowski/csv-async, and deserialize to [`stations_core::data::StationRecord`]
 
@@ -52,7 +47,7 @@ impl SyncAction {
         conn.execute(
             "CREATE TABLE stations (
                 id   TEXT PRIMARY KEY,
-                name TEXT NOT NULL
+                name TEXT NOT NULL,
                 slug TEXT,
                 uic TEXT,
                 uic8_sncf TEXT,
@@ -132,10 +127,22 @@ impl SyncAction {
         )?;
 
         while let Some(record) = records.next().await {
+            let name = &record.unwrap().name;
             conn.execute("
             INSERT into stations (name) VALUES (?1)
             ",
-            (&record.unwrap().name));
+            params![name]
+            ,
+            )?;
+        
+        }
+
+        let mut statement = conn.prepare("SELECT id, name FROM stations")?;
+
+        let mut rows = statement.query([])?;
+
+        while let Some(row) = rows.next()? {
+            println!("Row {:?}", row);
         }
 
         Ok(())
