@@ -5,4 +5,7 @@ pub enum Error {
 
     #[error("I/O error: {0}")]
     Io(#[from] tokio::io::Error),
+
+    #[error("Deserialization error: {0}")]
+    Deserialization(#[from] csv_async::Error),
 }

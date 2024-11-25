@@ -296,7 +296,11 @@ dependencies = [
  "cfg-if",
  "csv-core",
  "futures",
+ "itoa",
+ "ryu",
  "serde",
+ "tokio",
+ "tokio-stream",
 ]
 
 [[package]]

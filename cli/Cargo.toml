@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow.workspace = true
 clap = { workspace = true, features = ["derive", "std", "help", "error-context", "color", "suggestions", "usage"] }
-csv-async = { workspace = true, features = ["serde"] }
+csv-async = { workspace = true, features = ["with_serde", "tokio"] }
 reqwest = { workspace = true, features = ["json", "charset", "default-tls", "http2", "macos-system-configuration", "stream"] }
 rusqlite = { workspace = true, features = ["bundled"] }
 stations-core = { workspace = true }

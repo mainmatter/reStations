@@ -29,6 +29,7 @@ impl SyncAction {
         // For now we just read the entire body in a string and print it
         // let mut body = String::new();
         // reader.read_to_string(&mut body).await?;
+        // println!("{body}");
 
         // 2. pipe the data into https://github.com/gwierzchowski/csv-async, and deserialize to [`stations_core::data::StationRecord`]
 
@@ -43,8 +44,6 @@ impl SyncAction {
         while let Some(record) = records.next().await {
             println!("{:?}", record?);
         }
-
-
 
         // 3. pipe deserialized data into database
 
