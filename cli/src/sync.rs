@@ -33,11 +33,9 @@ impl SyncAction {
 
         // 2. pipe the data into https://github.com/gwierzchowski/csv-async, and deserialize to [`stations_core::data::StationRecord`]
 
-        // let mut deserializer = AsyncReaderBuilder::new()
-        //     .delimiter(b';')
-        //     .create_deserializer(reader);
-
-        let mut deserializer = csv_async::AsyncDeserializer::from_reader(reader);
+        let mut deserializer = csv_async::AsyncReaderBuilder::new()
+            .delimiter(b';')
+            .create_deserializer(reader);
 
         let mut records = deserializer.deserialize::<StationRecord>();
 
