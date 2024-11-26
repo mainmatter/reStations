@@ -1324,6 +1324,7 @@ dependencies = [
  "anyhow",
  "clap",
  "csv-async",
+ "futures-util",
  "reqwest",
  "rusqlite",
  "stations-core",
