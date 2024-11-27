@@ -1,5 +1,7 @@
 //! The restations_web crate contains the application's web interface which mainly are controllers implementing HTTP endpoints. It also includes the application tests that are black-box tests, interfacing with the application like any other HTTP client.
 
+use std::sync::{Arc, Mutex};
+
 use anyhow::Context;
 use axum::serve;
 use error::Error;
@@ -43,8 +45,9 @@ pub mod types;
 /// 5. Boot the application and start listening for requests on the configured interface and port
 pub async fn run() -> anyhow::Result<()> {
     let conn = Connection::open_in_memory()?;
-    let connection = sync(conn).await?;
-
+    let conn = Arc::new(Mutex::new(conn));
+    sync(conn.clone()).await?;
+    
     let env = get_env().context("Cannot get environment!")?;
     let config: Config = load_config(&env).context("Cannot load config!")?;
 
@@ -85,13 +88,13 @@ pub mod test_helpers;
 
 /// TODO move this function somewhere else
 /// TODO don't take ownershi
-async fn sync(conn: Connection) -> Result<(), Error> { // -> rusqlite_connection
+async fn sync(conn: Arc<Mutex<Connection>>) -> Result<(), Error> { // -> rusqlite_connection
     // A channel for sending the records to the database worker thread
         let (tx, mut rx) = mpsc::channel::<StationRecord>(32);
 
         // Spawn worker thread for the blocking database operations
         let db_task = tokio::task::spawn_blocking(move || {
-        
+            let conn = conn.lock().unwrap();
             // Refresh the table
             conn.execute_batch(include_str!("../../db.sql"))?;
 
