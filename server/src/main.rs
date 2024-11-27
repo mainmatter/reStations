@@ -1,4 +1,10 @@
 fn main() {
+    // 1. Compile in the sqlite db file
+    // 2. load the db into an in-memory db
+    // 3. setup axum
+    // 4. profit!
+
+
     // TODO
     // - load sqlite datbase as created by stations-cli
     // - serve the data from gerust, implementing osdm spec

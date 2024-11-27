@@ -11,3 +11,7 @@ This system consists of two applications:
 The initial version of `restations-server` will have the data compiled in its binary, so that it can be served and scaled trivially. This comes at the cost of needing to deploy the latest version each time the latest version of `stations.csv` gets synced, but it saves us having to put the data in a database or a persistent storage.
 
 Later versions may support loading the data periodically at runtime. 
+
+
+## Open questions
+- Why PollSender
