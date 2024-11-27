@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request: {}
+
+
+jobs:
+  rustfmt:
+    name: "Rust Format"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        components: rustfmt
+
+    - name: fmt
+      run: cargo fmt --all --check
+
+  clippy:
+    name: "Clippy"
+    runs-on: ubuntu-latest
+
+    
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        components: clippy
+    
+    - name: clippy
+      run: cargo clippy --all-targets -- -D warnings
+
+  test:
+    name: "Test"
+    runs-on: ubuntu-latest
+
+    
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+    
+    - name: test
+      run: cargo test

@@ -1,4 +1,3 @@
-DROP TABLE IF EXISTS stations;
 CREATE TABLE IF NOT EXISTS stations (
     id   TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -76,4 +75,4 @@ CREATE TABLE IF NOT EXISTS stations (
     info_zh TEXT,
     normalised_code TEXT,
     iata_airport_code TEXT
-)
+);

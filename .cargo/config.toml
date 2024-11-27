@@ -1,0 +1,2 @@
+[alias]
+generate = ["run", "--package", "restations-cli", "--bin", "generate", "--"]

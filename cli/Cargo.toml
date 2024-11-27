@@ -1,17 +1,27 @@
 [package]
-name = "stations-cli"
-version = "0.1.0"
+name = "restations-cli"
+version = "0.0.1"
 edition = "2021"
+publish = false
+
+[lib]
+# examples in docs don't run without additional setup
+doctest = false
+
+[[bin]]
+name = "generate"
+path = "src/bin/generate.rs"
 
 [dependencies]
-anyhow.workspace = true
-clap = { workspace = true, features = ["derive", "std", "help", "error-context", "color", "suggestions", "usage"] }
-csv-async = { workspace = true, features = ["with_serde", "tokio"] }
-futures-util = { version = "0.3.31", default-features = false, features = ["sink"] }
-reqwest = { workspace = true, features = ["json", "charset", "default-tls", "http2", "macos-system-configuration", "stream"] }
-rusqlite = { workspace = true, features = ["bundled"] }
-stations-core = { workspace = true }
-thiserror.workspace = true
-tokio = { workspace = true, features = ["rt", "rt-multi-thread", "macros"] }
-tokio-stream = { workspace = true }
-tokio-util = { workspace = true, features = ["io"] }
+anyhow = "1"
+clap = { version = "4.4", features = ["derive"] }
+cruet = "0.14"
+guppy = "0.17"
+include_dir = "0.7"
+liquid = "~0.26"
+restations-config = { path = "../config" }
+
+tokio = { version = "1.34", features = ["full"] }
+
+[dev-dependencies]
+insta = "1.38"
