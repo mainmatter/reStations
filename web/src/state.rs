@@ -1,9 +1,13 @@
 use restations_config::Config;
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
+use rusqlite::{Connection, Result, Error};
+
 
 /// The application's state that is available in [`crate::controllers`] and [`crate::middlewares`].
-pub struct AppState {}
+pub struct AppState {
+    conn: Arc<Mutex<Connection>>,
+}
 
 /// The application's state as it is shared across the application, e.g. in controllers and middlewares.
 ///
@@ -14,6 +18,12 @@ pub type SharedAppState = Arc<AppState>;
 ///
 /// This function creates an [`AppState`] based on the current [`restations_config::Config`].
 
-pub async fn init_app_state(_config: Config) -> AppState {
-    AppState {}
+pub async fn init_app_state(_config: Config) -> Result<AppState, Error> {
+    let conn = Connection::open_in_memory()?;
+    
+    // TODO
+    // how to use SharedAppState instead?
+    Ok(AppState {
+        conn: Arc::new(Mutex::new(conn)),
+    })
 }

@@ -47,11 +47,16 @@ pub async fn run() -> anyhow::Result<()> {
     let conn = Connection::open_in_memory()?;
     let conn = Arc::new(Mutex::new(conn));
     sync(conn.clone()).await?;
-    
+
     let env = get_env().context("Cannot get environment!")?;
     let config: Config = load_config(&env).context("Cannot load config!")?;
 
-    let app_state = state::init_app_state(config.clone()).await;
+    let app_state = if let Ok(state) = state::init_app_state(config.clone()).await {
+        state
+    } else {
+        return Err(anyhow::anyhow!("Failed to initialize app state"));
+    };
+    
     let app = routes::init_routes(app_state);
 
     let addr = config.server.addr();
@@ -61,6 +66,7 @@ pub async fn run() -> anyhow::Result<()> {
 
     Ok(())
 }
+
 
 /// Initializes tracing.
 ///
