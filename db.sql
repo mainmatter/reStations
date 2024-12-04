@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS stations (
     trenitalia_is_enabled TEXT,
     trenitalia_rtvt_id TEXT,
     trenord_id TEXT,
-    ntv_rtiv_id TEXT,x
+    ntv_rtiv_id TEXT,
     ntv_id TEXT,
     ntv_is_enabled TEXT,
     hkx_id TEXT,
