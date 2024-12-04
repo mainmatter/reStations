@@ -6,7 +6,7 @@ use rusqlite::{Connection, Result, Error};
 
 /// The application's state that is available in [`crate::controllers`] and [`crate::middlewares`].
 pub struct AppState {
-    conn: Arc<Mutex<Connection>>,
+    pub conn: Arc<Mutex<Connection>>,
 }
 
 /// The application's state as it is shared across the application, e.g. in controllers and middlewares.
@@ -20,7 +20,7 @@ pub type SharedAppState = Arc<AppState>;
 
 pub async fn init_app_state(_config: Config) -> Result<AppState, Error> {
     let conn = Connection::open_in_memory()?;
-    
+
     // TODO
     // how to use SharedAppState instead?
     Ok(AppState {

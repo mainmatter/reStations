@@ -44,10 +44,6 @@ pub mod types;
 /// 4. Initialize the application's router (see [`routes::init_routes`])
 /// 5. Boot the application and start listening for requests on the configured interface and port
 pub async fn run() -> anyhow::Result<()> {
-    let conn = Connection::open_in_memory()?;
-    let conn = Arc::new(Mutex::new(conn));
-    sync(conn.clone()).await?;
-
     let env = get_env().context("Cannot get environment!")?;
     let config: Config = load_config(&env).context("Cannot load config!")?;
 
@@ -56,7 +52,10 @@ pub async fn run() -> anyhow::Result<()> {
     } else {
         return Err(anyhow::anyhow!("Failed to initialize app state"));
     };
-    
+
+    println!("Running sync");
+    sync(app_state.conn.clone()).await?;
+
     let app = routes::init_routes(app_state);
 
     let addr = config.server.addr();
