@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct StationRecord {
     // TODO figure out exact types for each fields
     // Where necessary, create newtypes that parse and validate the input
-    pub id: String,
+    pub id: i64,
     pub name: String,
     pub slug: String,
     pub uic: String,

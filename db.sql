@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS stations (
-    id   TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     slug TEXT,
     uic TEXT,
