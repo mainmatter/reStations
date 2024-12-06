@@ -1937,6 +1937,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
+ "serde_rusqlite",
  "thiserror 2.0.3",
  "tokio",
  "tokio-stream",
@@ -2133,6 +2134,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af99884400da37c88f5e9146b7f1fd0fbcae8f6eec4e9da38b67d05486f814a6"
 dependencies = [
  "itoa",
+ "serde",
+]
+
+[[package]]
+name = "serde_rusqlite"
+version = "0.36.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b741cc5ef185cd96157e762c3bba743c4e94c8dc6af0edb053c48d2b3c27e691"
+dependencies = [
+ "rusqlite",
  "serde",
 ]
 
