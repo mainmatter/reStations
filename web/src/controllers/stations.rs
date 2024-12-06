@@ -14,12 +14,18 @@ pub async fn list(State(app_state): State<SharedAppState>) -> Json<Vec<StationRe
 
     let mut stmt = locked_conn.prepare("SELECT * from stations").unwrap();
 
+    // let mut rows = stmt.query([]).unwrap();
+
+    // while let Ok(row) = rows.next() {
+    //     println!("{:?}", row.unwrap());
+    // }
+
     let res = from_rows::<StationRecord>(stmt.query([]).unwrap());
-    let mut stations = Vec::new();
+    let mut stations:Vec<StationRecord> = Vec::new();
 
     for station in res {
-        // stations.push(station.unwrap());
-        println!("{:?}", station.unwrap());
+        stations.push(station.unwrap());
+        // println!("{:?}", station.unwrap());
     }
 
 
