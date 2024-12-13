@@ -23,7 +23,7 @@ tokio-util = { version = "0.7.12", features = ["io"] }
 tower-http = { version = "0.6", features = ["full"] }
 tracing = "0.1"
 tracing-panic = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "registry", "fmt"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "registry", "fmt", "time"] }
 
 serde_json = { version = "1.0", optional = true }
 thiserror = "2.0"

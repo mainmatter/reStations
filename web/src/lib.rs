@@ -8,9 +8,9 @@ use error::Error;
 use restations_config::{get_env, load_config, Config};
 
 use tokio::{net::TcpListener, sync::mpsc};
-use tracing::info;
+use tracing::{info, instrument};
 use tracing_panic::panic_hook;
-use tracing_subscriber::{filter::EnvFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::{filter::EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 use types::station_record::StationRecord;
 
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
@@ -53,7 +53,6 @@ pub async fn run() -> anyhow::Result<()> {
         return Err(anyhow::anyhow!("Failed to initialize app state"));
     };
 
-    println!("Running sync");
     sync(app_state.conn.clone()).await?;
 
     let app = routes::init_routes(app_state);
@@ -76,11 +75,17 @@ pub async fn run() -> anyhow::Result<()> {
 ///
 /// The function respects the `RUST_LOG` if set or defaults to filtering spans and events with level [`tracing_subscriber::filter::LevelFilter::INFO`] and higher.
 pub fn init_tracing() {
+    use tracing_subscriber::fmt::format::FmtSpan;
+    use tracing_subscriber::fmt::time::UtcTime;
+
     let filter = EnvFilter::try_from_default_env()
         .or_else(|_| EnvFilter::try_new("info"))
         .unwrap();
+    let fmt_layer = tracing_subscriber::fmt::layer()
+        .with_span_events(FmtSpan::CLOSE)
+        .with_timer(UtcTime::rfc_3339());
     tracing_subscriber::registry()
-        .with(fmt::layer())
+        .with(fmt_layer)
         .with(filter)
         .init();
 
@@ -93,7 +98,9 @@ pub mod test_helpers;
 
 /// TODO move this function somewhere else
 /// TODO don't take ownership
-async fn sync(conn: Arc<Mutex<Connection>>) -> Result<(), Error> { // -> rusqlite_connection
+#[instrument(skip_all)]
+async fn sync(conn: Arc<Mutex<Connection>>) -> Result<(), Error> {
+    // -> rusqlite_connection
     // A channel for sending the records to the database worker thread
         let (tx, mut rx) = mpsc::channel::<StationRecord>(32);
 
