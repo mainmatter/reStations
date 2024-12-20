@@ -1,8 +1,7 @@
 use restations_config::Config;
 
+use rusqlite::{Connection, Error, Result};
 use std::sync::{Arc, Mutex};
-use rusqlite::{Connection, Result, Error};
-
 
 /// The application's state that is available in [`crate::controllers`] and [`crate::middlewares`].
 pub struct AppState {
