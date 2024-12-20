@@ -7,6 +7,8 @@ use axum::serve;
 use error::Error;
 use restations_config::{get_env, load_config, Config};
 
+mod db;
+
 use tokio::{net::TcpListener, sync::mpsc};
 use tracing::{info, instrument};
 use tracing_panic::panic_hook;
@@ -105,7 +107,7 @@ async fn sync(conn: Arc<Mutex<Connection>>) -> Result<(), Error> {
     let db_task = tokio::task::spawn_blocking(move || {
         let conn = conn.lock().unwrap();
         // Refresh the table
-        conn.execute_batch(include_str!("../../db.sql"))?;
+        db::create_tables(&conn)?;
 
         // 4. Insert records in database
         while let Some(record) = rx.blocking_recv() {
