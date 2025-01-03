@@ -1,6 +1,5 @@
-DROP TABLE IF EXISTS stations;
 CREATE TABLE IF NOT EXISTS stations (
-    id   TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     slug TEXT,
     uic TEXT,
@@ -41,7 +40,7 @@ CREATE TABLE IF NOT EXISTS stations (
     trenitalia_is_enabled TEXT,
     trenitalia_rtvt_id TEXT,
     trenord_id TEXT,
-    ntv_rtiv_id TEXT,x
+    ntv_rtiv_id TEXT,
     ntv_id TEXT,
     ntv_is_enabled TEXT,
     hkx_id TEXT,
@@ -76,4 +75,4 @@ CREATE TABLE IF NOT EXISTS stations (
     info_zh TEXT,
     normalised_code TEXT,
     iata_airport_code TEXT
-)
+);

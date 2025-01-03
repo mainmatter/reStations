@@ -1,13 +1,55 @@
-# reStations
+# restations
 
-Rust-written REST-API wrapper around [trainline-eu/stations](https://github.com/trainline-eu/stations), a 'list of stations and associated metadata'. Hence the name.
+This README explains how to collaborate on this Gerust application.
 
-This is an educational project we're working on during Mainmatter's internal Rust sessions
+<add a description of the project here>
 
-This system consists of two applications:
-- `restations-cli`: A CLI that fetches the latest version of the `stations.csv` file in the stations repo and saves it as a sqlite database file.
-- `restations-server`: A REST API the serves the data saved by `restations-cli` from memory.
+## Prerequisites
 
-The initial version of `restations-server` will have the data compiled in its binary, so that it can be served and scaled trivially. This comes at the cost of needing to deploy the latest version each time the latest version of `stations.csv` gets synced, but it saves us having to put the data in a database or a persistent storage.
+* Rust (install via [rustup](https://rustup.rs))
 
-Later versions may support loading the data periodically at runtime. 
+## Project Structure
+
+Distinct parts of the project are separated into separate crates:
+
+```
+.
+├── cli    // CLI tools for generating project files
+├── config // Defines the `Config` struct and handles building the configuration from environment-specific TOML files and environment variables
+├── macros // Contains macros for application tests
+└── web    // The web interface as well as tests for it
+```
+
+### Environment
+
+The project uses `.env` and `.env.test` files to store configuration settings for the development and test environments respectively. Those files are read automatically by the parts of the application that require configuration settings to be present.
+
+## Commands
+
+Running the application in development mode:
+
+```
+cargo run
+```
+
+Running the application tests:
+
+```
+cargo test
+```
+
+Generating project files like entities, controllers, tests, etc. (see the [CLI create](./cli/README.md) for detailed documentation):
+
+```
+cargo generate
+```
+
+Building the project's docs:
+
+## Building documentation
+
+Build the project's documentation with:
+
+```
+cargo doc --workspace --all-features
+```

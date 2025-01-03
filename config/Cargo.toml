@@ -1,0 +1,20 @@
+[package]
+name = "restations-config"
+version = "0.0.1"
+edition = "2021"
+publish = false
+
+[lib]
+# examples in docs don't run without config files being in place, etc.
+doctest = false
+
+[dependencies]
+anyhow = "1"
+dotenvy = "0.15"
+figment = { version = "0.10", features = ["toml", "env"] }
+serde = { version = "1.0", features = ["derive"] } 
+tracing = "0.1"
+
+[dev-dependencies]
+figment = { version = "0.10", features = ["toml", "env", "test"] }
+googletest = "0.13"
