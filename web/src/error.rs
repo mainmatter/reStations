@@ -17,7 +17,7 @@ pub enum Error {
 
     #[error("SQLite error: {0}")]
     Sqlite(#[from] rusqlite::Error),
-    
+
     /// Any other error. Handled as an Internal Server Error.
     #[error("Error: {0}")]
     Other(#[from] anyhow::Error),
