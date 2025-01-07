@@ -2,6 +2,10 @@ use rusqlite::{Connection, Error, Result};
 
 use super::types::station_record::StationRecord;
 
+pub fn create_connection() -> Result<Connection, Error> {
+    Connection::open_in_memory()
+}
+
 pub fn create_tables(db: &Connection) -> Result<(), Error> {
     db.execute_batch(include_str!("./db.sql"))
 }
