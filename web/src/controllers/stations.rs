@@ -1,31 +1,33 @@
 use axum::response::Json;
-// TODO figure out why only using types:: doesn't work here
 use crate::state::SharedAppState;
 use crate::types::station_record::StationRecord;
 use axum::extract::State;
-use serde_rusqlite::from_rows;
+use serde_rusqlite::from_row;
+use tokio::sync::mpsc;
 
-// TODO what's the right notation here for a collection of station records?
-/// Responds with a [`[StationRecord]`], encoded as JSON.
 #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> Json<Vec<StationRecord>> {
-    let conn = app_state.conn.clone();
-    let locked_conn = conn.lock().unwrap();
+    let (sender, mut receiver) = mpsc::channel::<StationRecord>(32);
 
-    let mut stmt = locked_conn.prepare("SELECT * from stations").unwrap();
+    let db_task = tokio::task::spawn_blocking(move || {
+        let conn = app_state.conn.clone();
+        let locked_conn = conn.lock().unwrap();
 
-    // let mut rows = stmt.query([]).unwrap();
+        let mut stmt = locked_conn.prepare("SELECT * from stations").unwrap();
+        let station_results = stmt.query_and_then([], from_row::<StationRecord>).unwrap();
 
-    // while let Ok(row) = rows.next() {
-    //     println!("{:?}", row.unwrap());
-    // }
+        for station in station_results {
+            let station = station.unwrap();
+            sender.blocking_send(station).unwrap();
+        }
+    });
 
-    let res = from_rows::<StationRecord>(stmt.query([]).unwrap());
+    db_task.await.unwrap();
+
     let mut stations: Vec<StationRecord> = Vec::new();
 
-    for station in res {
-        stations.push(station.unwrap());
-        // println!("{:?}", station.unwrap());
+    while let Some(station) = receiver.recv().await {
+        stations.push(station);
     }
 
     Json(stations)
