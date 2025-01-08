@@ -17,7 +17,6 @@ use types::station_record::StationRecord;
 
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use reqwest;
-use rusqlite::{Connection, Result};
 
 use tokio_util::{io::StreamReader, sync::PollSender};
 
@@ -98,7 +97,7 @@ pub mod test_helpers;
 /// TODO move this function somewhere else
 /// TODO don't take ownership
 #[instrument(skip_all)]
-async fn sync(conn: Arc<Mutex<Connection>>) -> Result<(), Error> {
+async fn sync(conn: Arc<Mutex<db::Connection>>) -> db::Result<(), Error> {
     // -> rusqlite_connection
     // A channel for sending the records to the database worker thread
     let (tx, mut rx) = mpsc::channel::<StationRecord>(32);
