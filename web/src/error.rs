@@ -27,10 +27,10 @@ impl IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         match self {
             Error::Other(e) => internal_error(e).into_response(),
-            Error::HttpClient(error) => todo!(),
-            Error::Io(error) => todo!(),
-            Error::Deserialization(error) => todo!(),
-            Error::Sqlite(error) => todo!(),
+            Error::HttpClient(_error) => todo!(),
+            Error::Io(_error) => todo!(),
+            Error::Deserialization(_error) => todo!(),
+            Error::Sqlite(_error) => todo!(),
         }
     }
 }
