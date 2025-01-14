@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Single record in the [stations.csv](https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv) database.
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(sqlx::FromRow, Debug, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct StationRecord {
     // TODO figure out exact types for each fields

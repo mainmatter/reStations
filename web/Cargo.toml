@@ -31,11 +31,10 @@ tower = { version = "0.5", features = ["util"], optional = true }
 hyper = { version = "1.0", features = ["full"], optional = true }
 
 restations-macros = { path = "../macros", optional = true }
-rusqlite = { version = "0.32.1", features = ["bundled"] }
 reqwest = { version = "0.12.9", features = ["json", "stream"] }
 csv-async = { version = "1.3.0", features = ["tokio"] }
 futures-util = { version = "0.3.31", default-features = false, features = ["sink"] }
-serde_rusqlite = { version = "0.36.0" }
+sqlx = { version = "0.8", features = [ "runtime-tokio", "sqlite", "derive" ] }
 
 [dev-dependencies]
 fake = "3.0"

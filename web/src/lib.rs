@@ -103,14 +103,14 @@ async fn sync(conn: Arc<Mutex<db::Connection>>) -> db::Result<(), Error> {
     let (tx, mut rx) = mpsc::channel::<StationRecord>(32);
 
     // Spawn worker thread for the blocking database operations
-    let db_task = tokio::task::spawn_blocking(move || {
+    let db_task = tokio::task::spawn_blocking(async move || {
         let conn = conn.lock().unwrap();
         // Refresh the table
-        db::create_tables(&conn)?;
+        db::create_tables(&conn).await?;
 
         // 4. Insert records in database
         while let Some(record) = rx.blocking_recv() {
-            db::insert_station(&conn, &record)?;
+            db::insert_station(&conn, &record).await?;
         }
         Ok(())
     });
