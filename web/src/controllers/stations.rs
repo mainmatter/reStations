@@ -15,7 +15,7 @@ use super::super::db;
 pub async fn list(State(app_state): State<SharedAppState>) -> impl IntoResponse {
     let conn = app_state.conn.clone();
     let locked_conn = conn.lock().unwrap();
-    let (tx, mut rx) = mpsc::unbounded_channel::<Result<StationRecord, db::DbError>>();
+    let (tx, rx) = mpsc::unbounded_channel::<Result<StationRecord, db::DbError>>();
 
     db::find_all_stations(&locked_conn, tx);
     let stations_stream = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
