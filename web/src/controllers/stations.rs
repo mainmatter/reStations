@@ -13,12 +13,14 @@ use super::super::db;
 /// Responds with a [`[StationRecord]`], encoded as JSON.
 #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> impl IntoResponse {
-    let conn = app_state.conn.clone();
-    let locked_conn = conn.lock().unwrap();
     let (tx, rx) = mpsc::unbounded_channel::<Result<StationRecord, db::DbError>>();
-
-    db::find_all_stations(&locked_conn, tx);
-    let stations_stream = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
+    
+    let db_task = tokio::task::spawn_blocking(move || {
+        let conn = app_state.conn.clone();
+        let locked_conn = conn.lock().unwrap();
+        db::find_all_stations(&locked_conn, tx);
+    });
+    let stations_stream: tokio_stream::wrappers::UnboundedReceiverStream<Result<StationRecord, db::DbError>> = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
 
     Response::builder()
         .status(StatusCode::OK)
