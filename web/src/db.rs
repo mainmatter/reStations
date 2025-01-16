@@ -1,6 +1,6 @@
 use super::types::station_record::StationRecord;
 
-use serde_rusqlite::{from_row_with_columns,columns_from_statement};
+use serde_rusqlite::{columns_from_statement, from_row_with_columns};
 use tokio::sync::mpsc;
 
 #[derive(serde::Serialize)]
@@ -34,9 +34,13 @@ pub fn find_all_stations(db: &Connection, sender: Sender) -> () {
     let mut stmt = db.prepare("SELECT * from stations").unwrap();
 
     let columns = columns_from_statement(&stmt);
-    let stations = stmt.query_map([], |row| Ok(from_row_with_columns::<StationRecord>(row, &columns).unwrap())).unwrap();
+    let stations = stmt
+        .query_map([], |row| {
+            Ok(from_row_with_columns::<StationRecord>(row, &columns).unwrap())
+        })
+        .unwrap();
 
     for station in stations {
         let _ = sender.send(Ok(station.unwrap()));
-    };
+    }
 }

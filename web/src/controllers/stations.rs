@@ -1,5 +1,5 @@
+use axum::http::{header, StatusCode};
 use axum::response::{IntoResponse, Response};
-use axum::http::{StatusCode, header};
 use axum_streams::StreamBodyAs;
 // TODO figure out why only using types:: doesn't work here
 use crate::state::SharedAppState;
@@ -14,13 +14,15 @@ use super::super::db;
 #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> impl IntoResponse {
     let (tx, rx) = mpsc::unbounded_channel::<Result<StationRecord, db::DbError>>();
-    
-    let db_task = tokio::task::spawn_blocking(move || {
+
+    tokio::task::spawn_blocking(move || {
         let conn = app_state.conn.clone();
         let locked_conn = conn.lock().unwrap();
         db::find_all_stations(&locked_conn, tx);
     });
-    let stations_stream: tokio_stream::wrappers::UnboundedReceiverStream<Result<StationRecord, db::DbError>> = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
+    let stations_stream: tokio_stream::wrappers::UnboundedReceiverStream<
+        Result<StationRecord, db::DbError>,
+    > = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
 
     Response::builder()
         .status(StatusCode::OK)
