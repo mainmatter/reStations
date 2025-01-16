@@ -7,7 +7,7 @@ use crate::types::station_record::StationRecord;
 use axum::extract::State;
 use futures_util::TryStreamExt;
 use tokio::sync::mpsc;
-use tokio_stream::wrappers::UnboundedReceiverStream;
+use tokio_stream::wrappers::ReceiverStream;
 
 use super::super::db;
 
@@ -15,14 +15,15 @@ use super::super::db;
 /// Responds with a [`[StationRecord]`], encoded as JSON.
 #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> impl IntoResponse {
-    let (tx, rx) = mpsc::unbounded_channel::<Result<StationRecord, db::DbError>>();
+    let (sender, receiver) = mpsc::channel::<Result<StationRecord, db::DbError>>(100);
 
     tokio::task::spawn_blocking(move || {
         let conn = app_state.conn.clone();
         let locked_conn = conn.lock().unwrap();
-        db::find_all_stations(&locked_conn, tx);
+        db::find_all_stations(&locked_conn, sender);
     });
-    let stations_stream = UnboundedReceiverStream::new(rx).map_err(crate::error::Error::from);
+
+    let stations_stream = ReceiverStream::new(receiver).map_err(crate::error::Error::from);
 
     Response::builder()
         .status(StatusCode::OK)
