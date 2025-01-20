@@ -6,8 +6,11 @@ use crate::state::SharedAppState;
 use crate::types::station_record::StationRecord;
 use axum::extract::State;
 use tokio::sync::mpsc;
+use tokio_stream::wrappers::UnboundedReceiverStream;
 
 use super::super::db;
+
+type StationsStream = UnboundedReceiverStream<Result<StationRecord, db::DbError>>;
 
 // TODO what's the right notation here for a collection of station records?
 /// Responds with a [`[StationRecord]`], encoded as JSON.
@@ -20,9 +23,7 @@ pub async fn list(State(app_state): State<SharedAppState>) -> impl IntoResponse 
         let locked_conn = conn.lock().unwrap();
         db::find_all_stations(&locked_conn, tx);
     });
-    let stations_stream: tokio_stream::wrappers::UnboundedReceiverStream<
-        Result<StationRecord, db::DbError>,
-    > = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
+    let stations_stream: StationsStream = UnboundedReceiverStream::new(rx);
 
     Response::builder()
         .status(StatusCode::OK)
