@@ -1,6 +1,14 @@
 use super::types::station_record::StationRecord;
 
-use serde_rusqlite::from_rows;
+use serde_rusqlite::{columns_from_statement, from_row_with_columns};
+use tokio::sync::mpsc;
+
+#[derive(serde::Serialize)]
+pub enum DbError {
+    UnknownError,
+}
+
+type Sender = mpsc::UnboundedSender<Result<StationRecord, DbError>>;
 
 pub type Error = rusqlite::Error;
 pub type Connection = rusqlite::Connection;
@@ -22,14 +30,17 @@ pub fn insert_station(db: &Connection, record: &StationRecord) -> Result<usize, 
     )
 }
 
-pub fn find_all_stations(db: &Connection) -> Vec<StationRecord> {
+pub fn find_all_stations(db: &Connection, sender: Sender) -> () {
     let mut stmt = db.prepare("SELECT * from stations").unwrap();
-    let result = from_rows::<StationRecord>(stmt.query([]).unwrap());
-    let mut stations : Vec<StationRecord> = Vec::new();
 
-    for station in result {
-        stations.push(station.unwrap());
+    let columns = columns_from_statement(&stmt);
+    let stations = stmt
+        .query_map([], |row| {
+            Ok(from_row_with_columns::<StationRecord>(row, &columns).unwrap())
+        })
+        .unwrap();
+
+    for station in stations {
+        let _ = sender.send(Ok(station.unwrap()));
     }
-
-    stations
 }
