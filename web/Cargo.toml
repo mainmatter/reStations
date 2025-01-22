@@ -14,7 +14,7 @@ test-helpers = ["dep:serde_json", "dep:tower", "dep:hyper", "dep:restations-macr
 [dependencies]
 anyhow = "1.0"
 axum = { version = "0.7", features = ["macros"] }
-axum-streams = { version = "0.20", features = ["json"] }
+axum-streams = { version = "0.19", features = ["json"] }
 restations-config = { path = "../config" }
 
 serde = { version = "1.0", features = ["derive"] }

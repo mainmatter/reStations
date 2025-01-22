@@ -18,7 +18,7 @@ pub type SharedAppState = Arc<AppState>;
 ///
 /// This function creates an [`AppState`] based on the current [`restations_config::Config`].
 
-pub async fn init_app_state(_config: Config) -> db::Result<AppState> {
+pub async fn init_app_state(_config: Config) -> Result<AppState, crate::error::Error> {
     let conn = db::create_connection()?;
 
     // TODO

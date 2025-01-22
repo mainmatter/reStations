@@ -18,7 +18,7 @@ pub enum Error {
     Deserialization(#[from] csv_async::Error),
 
     #[error("SQLite error: {0}")]
-    Sqlite(#[from] db::Error),
+    Sqlite(#[from] db::DbError),
 
     /// Any other error. Handled as an Internal Server Error.
     #[error("Error: {0}")]
@@ -34,6 +34,12 @@ impl IntoResponse for Error {
             Error::Deserialization(_error) => todo!(),
             Error::Sqlite(_error) => todo!(),
         }
+    }
+}
+
+impl From<Error> for axum::Error {
+    fn from(value: Error) -> Self {
+        axum::Error::new(value)
     }
 }
 
