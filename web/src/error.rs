@@ -39,7 +39,7 @@ impl IntoResponse for Error {
 
 impl From<Error> for axum::Error {
     fn from(value: Error) -> Self {
-        todo!()
+        axum::Error::new(value)
     }
 }
 
