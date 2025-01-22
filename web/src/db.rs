@@ -18,7 +18,7 @@ impl From<rusqlite::Error> for DbError {
     }
 }
 
-type Sender = mpsc::UnboundedSender<Result<StationRecord, DbError>>;
+type Sender = mpsc::Sender<Result<StationRecord, DbError>>;
 
 pub type Connection = rusqlite::Connection;
 
@@ -49,6 +49,6 @@ pub fn find_all_stations(db: &Connection, sender: Sender) -> () {
         .unwrap();
 
     for station in stations {
-        let _ = sender.send(station.map_err(Into::into));
+        sender.blocking_send(Ok(station.unwrap())).ok();
     }
 }
