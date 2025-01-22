@@ -21,9 +21,7 @@ impl From<rusqlite::Error> for DbError {
 
 type Sender = mpsc::UnboundedSender<Result<StationRecord, DbError>>;
 
-pub type Error = rusqlite::Error;
 pub type Connection = rusqlite::Connection;
-// pub type Result<T, E = Error> = rusqlite::Result<T, E>;
 
 pub fn create_connection() -> Result<Connection, DbError> {
     Ok(Connection::open_in_memory()?)

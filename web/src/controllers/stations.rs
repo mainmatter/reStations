@@ -11,8 +11,6 @@ use tokio_stream::wrappers::UnboundedReceiverStream;
 
 use super::super::db;
 
-type StationsStream = UnboundedReceiverStream<Result<StationRecord, db::DbError>>;
-
 // TODO what's the right notation here for a collection of station records?
 /// Responds with a [`[StationRecord]`], encoded as JSON.
 #[axum::debug_handler]
