@@ -4,8 +4,8 @@ use axum_streams::StreamBodyAs;
 // TODO figure out why only using types:: doesn't work here
 use crate::state::SharedAppState;
 use crate::types::station_record::StationRecord;
-use futures_util::TryStreamExt;
 use axum::extract::State;
+use futures_util::TryStreamExt;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::UnboundedReceiverStream;
 

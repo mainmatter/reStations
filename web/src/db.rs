@@ -18,7 +18,6 @@ impl From<rusqlite::Error> for DbError {
     }
 }
 
-
 type Sender = mpsc::UnboundedSender<Result<StationRecord, DbError>>;
 
 pub type Connection = rusqlite::Connection;
