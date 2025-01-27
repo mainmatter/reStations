@@ -1,18 +1,17 @@
-use std::task::Poll;
-
 use axum::body::Bytes;
 use axum::http::{header, StatusCode};
 use axum::response::{IntoResponse, Response};
-use axum_streams::StreamBodyAs;
 use hyper::body::Frame;
+use serde::Serialize;
+use serde_json::to_string;
 // TODO figure out why only using types:: doesn't work here
 use crate::state::SharedAppState;
 use crate::types::station_record::StationRecord;
 use axum::extract::State;
-use futures_util::TryStreamExt;
+use futures_util::{TryStream, TryStreamExt};
+use std::task::Poll;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
-use futures_util::TryStream;
 
 use super::super::db;
 
@@ -42,13 +41,13 @@ struct JsonStreamBody<S> {
     stream: S,
     problems: Vec<Problem>,
     current_state: JsonStreamBodyState,
+    has_sent_first: bool,
 }
 
 enum JsonStreamBodyState {
     Initial,
     Stations,
     Problems,
-    ProblemsDone,
     End,
 }
 
@@ -57,48 +56,77 @@ impl<S> JsonStreamBody<S> {
         Self {
             stream,
             problems: vec![],
+            has_sent_first: false,
             current_state: JsonStreamBodyState::Initial,
         }
     }
 }
 
-impl<I: serde::Serialize, S: futures_util::TryStream<Item = I> + std::marker::Unpin> axum::body::HttpBody for JsonStreamBody<S> {
+impl<I: Serialize, S: TryStream<Ok = I> + std::marker::Unpin> axum::body::HttpBody
+    for JsonStreamBody<S>
+{
     type Data = axum::body::Bytes;
     type Error = std::convert::Infallible;
-    
+
     fn poll_frame(
-        self: std::pin::Pin<&mut Self>,
+        mut self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> Poll<Option<Result<hyper::body::Frame<Self::Data>, Self::Error>>> {
-        let this = self.get_mut();
+        let mut this = self.as_mut();
         match this.current_state {
             // initial state: send `{ "places": [`
             JsonStreamBodyState::Initial => {
                 this.current_state = JsonStreamBodyState::Stations;
-                Poll::Ready(Some(Ok(Frame::data(Bytes::from_static(br#"{ "places": ["#)))))
-            },
+                Poll::Ready(Some(Ok(Frame::data(Bytes::from_static(
+                    br#"{ "places": ["#,
+                )))))
+            }
             // streaming: send results and commas
             JsonStreamBodyState::Stations => {
                 let stream_pinned = std::pin::Pin::new(&mut this.stream);
-            // ) -> Poll<Option<Result<Self::Ok, Self::Error>>>;
+                // ) -> Poll<Option<Result<Self::Ok, Self::Error>>>;
                 match stream_pinned.try_poll_next(cx) {
                     Poll::Ready(None) => {
                         // streaming_done: send `], "problems": [`
                         this.current_state = JsonStreamBodyState::Problems;
-                        Poll::Ready(Some(Ok(Frame::data(Bytes::from_static(br#"], "problems": ["#)))))
+                        Poll::Ready(Some(Ok(Frame::data(Bytes::from_static(br#"]"#)))))
+                    }
+                    Poll::Ready(Some(Ok(station))) => match to_string(&station) {
+                        Ok(station_json) => {
+                            let delimiter = if self.has_sent_first { ", " } else { "" };
+                            self.has_sent_first = true;
+                            let json = Bytes::from(format!(r#"{delimiter}{station_json}"#));
+                            Poll::Ready(Some(Ok(Frame::data(json))))
+                        }
+                        Err(_) => {
+                            this.problems.push(Problem {
+                                code: "station_error".to_string(),
+                                title: "failed to parse".to_string(),
+                            });
+                            Poll::Pending
+                        }
                     },
-                    Poll::Ready(msg) => {
-                        todo!()
-                    },
+                    Poll::Ready(Some(Err(station_err))) => {
+                        this.problems.push(Problem {
+                            code: "station_error".to_string(),
+                            title: "title".to_string(),
+                        });
+                        Poll::Pending
+                    }
                     Poll::Pending => Poll::Pending,
                 }
             }
             // sending_problems: send problems and commas
-            JsonStreamBodyState::Problems => todo!(),
-            // problems_done: send `] }`
-            JsonStreamBodyState::ProblemsDone => todo!(),
+            JsonStreamBodyState::Problems => {
+                this.current_state = JsonStreamBodyState::End;
+                let json = Bytes::from(format!(
+                    r#", "problems": {} }}"#,
+                    to_string(&self.problems).unwrap()
+                ));
+                Poll::Ready(Some(Ok(Frame::data(json))))
+            }
             // end: return None
-            JsonStreamBodyState::End => todo!(),
+            JsonStreamBodyState::End => Poll::Ready(None),
         }
     }
 }
