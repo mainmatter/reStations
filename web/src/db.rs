@@ -3,19 +3,10 @@ use super::types::station_record::StationRecord;
 use serde_rusqlite::{columns_from_statement, from_row_with_columns};
 use tokio::sync::mpsc;
 
-#[derive(serde::Serialize, Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum DbError {
-    #[error("Unknown error")]
-    UnknownError,
-
-    #[error("Database error: {0}")]
-    Database(String),
-}
-
-impl From<rusqlite::Error> for DbError {
-    fn from(value: rusqlite::Error) -> Self {
-        Self::Database(value.to_string())
-    }
+    #[error("{0}")]
+    Database(#[from] rusqlite::Error),
 }
 
 type Sender = mpsc::Sender<Result<StationRecord, DbError>>;
@@ -38,8 +29,14 @@ pub fn insert_station(db: &Connection, record: &StationRecord) -> Result<usize, 
     )?)
 }
 
-pub fn find_all_stations(db: &Connection, sender: Sender) -> () {
-    let mut stmt = db.prepare("SELECT * from stations").unwrap();
+pub fn find_all_stations(db: &Connection, sender: Sender) {
+    let mut stmt = match db.prepare("SELECT * from stations") {
+        Ok(stmt) => stmt,
+        Err(e) => {
+            sender.blocking_send(Err(e.into())).ok();
+            return;
+        }
+    };
 
     let columns = columns_from_statement(&stmt);
     let stations = stmt
@@ -49,6 +46,8 @@ pub fn find_all_stations(db: &Connection, sender: Sender) -> () {
         .unwrap();
 
     for station in stations {
-        sender.blocking_send(Ok(station.unwrap())).ok();
+        // let _guard = sender.send(station.map_err(Into::into));
+        // sender.blocking_send(Ok(station.unwrap())).ok();
+        sender.blocking_send(station.map_err(Into::into)).ok();
     }
 }

@@ -1,5 +1,5 @@
-use crate::routes::init_routes;
 use crate::state::AppState;
+use crate::{routes::init_routes, state::init_app_state};
 use axum::{
     body::{Body, Bytes},
     http::{Method, Request},
@@ -188,9 +188,9 @@ pub struct TestContext {
 /// This function is not invoked directly but used inside of the [`restations_macros::test`] attribute macro. The test context is automatically passed to test cases marked with that macro as an argument.
 pub async fn setup() -> TestContext {
     let init_config: OnceCell<Config> = OnceCell::new();
-    let _config = init_config.get_or_init(|| load_config(&Environment::Test).unwrap());
+    let config = init_config.get_or_init(|| load_config(&Environment::Test).unwrap());
 
-    let app = init_routes(AppState {});
+    let app = init_routes(init_app_state(config.to_owned()).await.unwrap());
 
     TestContext { app }
 }
