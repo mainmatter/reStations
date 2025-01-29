@@ -1,12 +1,12 @@
 use restations_config::Config;
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use super::db;
 
 /// The application's state that is available in [`crate::controllers`] and [`crate::middlewares`].
 pub struct AppState {
-    pub conn: Arc<Mutex<db::Connection>>,
+    pub conn: Arc<db::Connection>,
 }
 
 /// The application's state as it is shared across the application, e.g. in controllers and middlewares.
@@ -24,6 +24,6 @@ pub async fn init_app_state(_config: Config) -> Result<AppState, crate::error::E
     // TODO
     // how to use SharedAppState instead?
     Ok(AppState {
-        conn: Arc::new(Mutex::new(conn)),
+        conn: Arc::new(conn),
     })
 }

@@ -17,10 +17,9 @@ use super::super::db;
 pub async fn list(State(app_state): State<SharedAppState>) -> impl IntoResponse {
     let (sender, receiver) = mpsc::channel::<Result<StationRecord, db::DbError>>(100);
 
+    let conn = app_state.conn.clone();
     tokio::task::spawn_blocking(move || {
-        let conn = app_state.conn.clone();
-        let locked_conn = conn.lock().unwrap();
-        db::find_all_stations(&locked_conn, sender);
+        db::find_all_stations(&conn, sender);
     });
 
     let stations_stream = ReceiverStream::new(receiver).map_err(crate::error::Error::from);
