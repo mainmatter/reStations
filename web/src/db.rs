@@ -1,5 +1,6 @@
 use super::types::station_record::StationRecord;
 
+use r2d2_sqlite::SqliteConnectionManager;
 use serde_rusqlite::{columns_from_statement, from_row_with_columns};
 use tokio::sync::mpsc;
 
@@ -21,9 +22,11 @@ impl From<rusqlite::Error> for DbError {
 type Sender = mpsc::Sender<Result<StationRecord, DbError>>;
 
 pub type Connection = rusqlite::Connection;
+pub type Pool = r2d2::Pool<SqliteConnectionManager>;
 
-pub fn create_connection() -> Result<Connection, DbError> {
-    Ok(Connection::open_in_memory()?)
+pub fn create_pool() -> Pool {
+    let manager = SqliteConnectionManager::memory();
+    Pool::new(manager).expect("Failed to create pool")
 }
 
 pub fn create_tables(db: &Connection) -> Result<(), DbError> {

@@ -1,6 +1,6 @@
 //! The restations_web crate contains the application's web interface which mainly are controllers implementing HTTP endpoints. It also includes the application tests that are black-box tests, interfacing with the application like any other HTTP client.
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use anyhow::Context;
 use axum::serve;
@@ -52,7 +52,7 @@ pub async fn run() -> anyhow::Result<()> {
         return Err(anyhow::anyhow!("Failed to initialize app state"));
     };
 
-    sync(app_state.conn.clone()).await?;
+    sync(app_state.pool.clone()).await?;
 
     let app = routes::init_routes(app_state);
 
@@ -97,14 +97,13 @@ pub mod test_helpers;
 /// TODO move this function somewhere else
 /// TODO don't take ownership
 #[instrument(skip_all)]
-async fn sync(conn: Arc<Mutex<db::Connection>>) -> Result<(), Error> {
-    // -> rusqlite_connection
+async fn sync(pool: Arc<db::Pool>) -> Result<(), Error> {
     // A channel for sending the records to the database worker thread
     let (tx, mut rx) = mpsc::channel::<StationRecord>(32);
 
     // Spawn worker thread for the blocking database operations
     let db_task = tokio::task::spawn_blocking(move || {
-        let conn = conn.lock().unwrap();
+        let conn = pool.get().unwrap();
         // Refresh the table
         db::create_tables(&conn)?;
 
