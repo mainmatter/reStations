@@ -11,6 +11,8 @@ use tokio_stream::wrappers::ReceiverStream;
 
 use super::super::db;
 
+pub type StationsListResponse = Vec<StationRecord>;
+
 // TODO what's the right notation here for a collection of station records?
 /// Responds with a [`[StationRecord]`], encoded as JSON.
 #[axum::debug_handler]

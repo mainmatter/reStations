@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::routes::init_routes;
 use crate::state::AppState;
 use axum::{
@@ -10,6 +12,8 @@ use hyper::header::{HeaderMap, HeaderName};
 use restations_config::{load_config, Config, Environment};
 use std::cell::OnceCell;
 use tower::ServiceExt;
+
+use crate::db;
 
 /// A request that a test sends to the application.
 ///
@@ -190,7 +194,9 @@ pub async fn setup() -> TestContext {
     let init_config: OnceCell<Config> = OnceCell::new();
     let _config = init_config.get_or_init(|| load_config(&Environment::Test).unwrap());
 
-    let app = init_routes(AppState {});
+    let app = init_routes(AppState {
+        pool: Arc::new(db::create_pool()),
+    });
 
     TestContext { app }
 }
