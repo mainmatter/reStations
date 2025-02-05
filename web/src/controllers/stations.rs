@@ -1,6 +1,7 @@
 use axum::body::Bytes;
 use axum::http::{header, StatusCode};
 use axum::response::{IntoResponse, Response};
+use fake::Optional;
 use hyper::body::Frame;
 use serde::Serialize;
 use serde_json::to_string;
@@ -17,7 +18,7 @@ use super::super::db;
 
 // TODO what's the right notation here for a collection of station records?
 /// Responds with a [`[StationRecord]`], encoded as JSON.
-#[axum::debug_handler]
+// #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> impl IntoResponse {
     let (sender, receiver) = mpsc::channel::<Result<StationRecord, db::DbError>>(100);
 
@@ -138,6 +139,74 @@ where
     { "places": [112312, 123123 ,123123 ,123 , ❌, 123123 312,31231, 420,123 , ❌, 12313,], "problems": [{idx: 0, e: "wrong stuff"}] };
 
 */
+
+
+async fn timeout(s: u64) {
+    todo!("await a timeout");
+}
+
+
+enum DoThingsState<'s> {
+    BeforeTimeout,
+    AfterTimeout(&'s String),
+    Done,
+}
+
+struct DoThings {
+    state: DoThingsState<'_>,
+    the_string: Option<String>
+}
+
+impl<'s> Future for DoThings<'s> {
+    type Output = u8;
+    
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        match self.as_mut() {
+            BeforeTimeout => {
+                println!("hello");
+                
+                // todo poll timeout fn
+                *self.the_string = Some(String::from("hello"));
+                *self = Self::AfterTimeout(&self.the_string);
+                Poll::Pending
+            }
+            AfterTimeout(x) => {
+                print!("World {x}");
+                *self = Self::Done;
+                Poll::Pending
+            }
+            
+            Done => {
+                Poll::Ready(1u8)
+            }
+        }
+    }
+}
+
+fn do_things() -> impl Future<Output = u8> {
+    
+    
+    
+    // DoThings::BeforeTimeout
+    async {
+        let x: DoThings = todo!();
+        poll_fn(|cx| {
+            let x : Pin<&mut DoThings> = std::pin::pin!(x);
+            match x.poll(cx) {
+                Poll::Ready(_) => todo!("done!"),
+                Poll::Pending => todo!("poll me again!"),
+            }
+        }).await;
+        println!("hello");
+        let x = &String::from("hello");
+        
+        timeout(10).await;
+        
+        print!("World {x}");
+        
+        1u8
+    }
+}
 
 #[derive(serde::Serialize, serde::Deserialize)]
 struct Problem {
