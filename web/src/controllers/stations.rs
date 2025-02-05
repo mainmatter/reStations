@@ -61,8 +61,11 @@ impl<S> JsonStreamBody<S> {
     }
 }
 
-impl<I: Serialize, S: TryStream<Ok = I> + std::marker::Unpin> axum::body::HttpBody
-    for JsonStreamBody<S>
+impl<I, S, E> axum::body::HttpBody for JsonStreamBody<S>
+where
+    I: Serialize,
+    E: std::error::Error,
+    S: TryStream<Ok = I, Error = E> + std::marker::Unpin,
 {
     type Data = axum::body::Bytes;
     type Error = std::convert::Infallible;
@@ -97,18 +100,20 @@ impl<I: Serialize, S: TryStream<Ok = I> + std::marker::Unpin> axum::body::HttpBo
                             let json = Bytes::from(format!(r#"{delimiter}{station_json}"#));
                             Poll::Ready(Some(Ok(Frame::data(json))))
                         }
-                        Err(_) => {
+                        Err(e) => {
+                            let err = e.to_string();
                             this.problems.push(Problem {
                                 code: "station_error".to_string(),
-                                title: "failed to parse".to_string(),
+                                title: err,
                             });
                             Poll::Pending
                         }
                     },
                     Poll::Ready(Some(Err(station_err))) => {
+                        let err = station_err.to_string();
                         this.problems.push(Problem {
                             code: "station_error".to_string(),
-                            title: "title".to_string(),
+                            title: err,
                         });
                         Poll::Pending
                     }
