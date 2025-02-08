@@ -183,6 +183,7 @@ impl BodyExt for Body {
 pub struct TestContext {
     /// The application that is being tested.
     pub app: Router,
+    pub pool: Arc<db::Pool>,
 }
 
 /// Sets up a test and returns a [`TestContext`].
@@ -194,9 +195,13 @@ pub async fn setup() -> TestContext {
     let init_config: OnceCell<Config> = OnceCell::new();
     let _config = init_config.get_or_init(|| load_config(&Environment::Test).unwrap());
 
+    let pool = Arc::new(db::create_pool());
     let app = init_routes(AppState {
-        pool: Arc::new(db::create_pool()),
+        pool: pool.clone(),
     });
 
-    TestContext { app }
+    TestContext {
+        app,
+        pool,
+    }
 }

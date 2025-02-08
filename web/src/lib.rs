@@ -7,7 +7,7 @@ use axum::serve;
 use error::Error;
 use restations_config::{get_env, load_config, Config};
 
-mod db;
+pub mod db;
 
 use tokio::{net::TcpListener, sync::mpsc};
 use tracing::{info, instrument};
