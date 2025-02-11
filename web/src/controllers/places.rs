@@ -2,22 +2,26 @@ use super::super::db;
 use crate::state::SharedAppState;
 use axum::extract::{Path, State};
 use axum::response::Json;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize)]
-pub struct Place {
-    id: i64,
-    object_type: String,
+#[derive(Deserialize, Serialize)]
+pub struct ApiPlaceResponse {
+    pub places: Vec<ApiPlace>,
+}
+#[derive(Deserialize, Serialize)]
+pub struct ApiPlace {
+    pub id: i64,
+    pub object_type: String,
     alternative_ids: Vec<String>,
-    geo_position: GeoPosition,
+    pub geo_position: ApiGeoPosition,
     _links: Vec<ApiLink>,
 }
-#[derive(Serialize)]
-pub struct GeoPosition {
-    latitude: f64,
-    longitude: f64,
+#[derive(Deserialize, Serialize)]
+pub struct ApiGeoPosition {
+    pub latitude: f64,
+    pub longitude: f64,
 }
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct ApiLink {
     rel: String,
     href: String,
@@ -26,7 +30,7 @@ pub struct ApiLink {
 }
 
 #[axum::debug_handler]
-pub async fn show(State(app_state): State<SharedAppState>, Path(id): Path<u64>) -> Json<Place> {
+pub async fn show(State(app_state): State<SharedAppState>, Path(id): Path<u64>) -> Json<ApiPlaceResponse> {
     let conn = app_state.pool.get().unwrap();
 
     let station = db::find_station(&conn, id).unwrap();
@@ -39,18 +43,21 @@ pub async fn show(State(app_state): State<SharedAppState>, Path(id): Path<u64>) 
         .parse::<f64>()
         .expect("Failed to parse longitude");
 
-    let geo_position = GeoPosition {
+    let geo_position = ApiGeoPosition {
         latitude: latitude,
         longitude: longitude,
     };
 
-    let place = Place {
+    let place = ApiPlace {
         id: station.id,
         object_type: "StopPlace".into(),
         alternative_ids: vec![],
         geo_position,
         _links: vec![],
     };
+    let response = ApiPlaceResponse {
+        places: vec![place],
+    };
 
-    Json(place)
+    Json(response)
 }
