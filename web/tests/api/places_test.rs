@@ -20,10 +20,12 @@ async fn test_show_ok(context: &TestContext) {
     let _ = db::insert_station(&dbconn, &test_station).expect("Could not insert station in DB");
 
     let response = context.app.request("/places/1").send().await;
-    let response: ApiPlaceResponse = response.into_body().into_json::<ApiPlaceResponse>().await;
+    assert_that!(response.status(), eq(200));
 
-    assert_that!(response.places.len(), eq(1));
-    let place = &response.places[0];
+    let api_place: ApiPlaceResponse = response.into_body().into_json::<ApiPlaceResponse>().await;
+
+    assert_that!(api_place.places.len(), eq(1));
+    let place = &api_place.places[0];
     assert_that!(place.id, eq(1));
     assert_that!(place.object_type, eq("StopPlace"));
     assert_that!(place.geo_position.latitude, eq(40.416729));
@@ -36,6 +38,8 @@ async fn test_show_not_found(context: &TestContext) {
     let _ = db::create_tables(&dbconn).expect("Could not create DB tables");
 
     let response = context.app.request("/places/1").send().await;
+    assert_that!(response.status(), eq(404));
+
     let problem: ApiProblem = response.into_body().into_json::<ApiProblem>().await;
 
     assert_that!(problem.code, eq("not-found"));
