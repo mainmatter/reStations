@@ -1,14 +1,14 @@
 use crate::db;
 use crate::state::SharedAppState;
 use crate::types::station_record::StationRecord;
+use crate::types::osdm::*;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
-use serde::{Deserialize, Serialize};
 
 pub enum PlacesShowResponse {
-    Ok(ApiPlaceResponse),
-    NotFound(ApiProblem),
+    Ok(OsdmPlaceResponse),
+    NotFound(OsdmProblem),
 }
 
 impl IntoResponse for PlacesShowResponse {
@@ -18,37 +18,6 @@ impl IntoResponse for PlacesShowResponse {
             Self::NotFound(body) => (StatusCode::NOT_FOUND, Json(body)).into_response(),
         }
     }
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct ApiPlaceResponse {
-    pub places: Vec<ApiPlace>,
-}
-#[derive(Deserialize, Serialize)]
-pub struct ApiPlace {
-    pub id: i64,
-    pub object_type: String,
-    alternative_ids: Vec<String>,
-    pub geo_position: ApiGeoPosition,
-    _links: Vec<ApiLink>,
-}
-#[derive(Deserialize, Serialize)]
-pub struct ApiGeoPosition {
-    pub latitude: f64,
-    pub longitude: f64,
-}
-#[derive(Deserialize, Serialize)]
-pub struct ApiLink {
-    rel: String,
-    href: String,
-    _type: String,
-    value: String,
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct ApiProblem {
-    pub code: String,
-    pub title: String,
 }
 
 #[axum::debug_handler]
@@ -75,19 +44,19 @@ fn show_found_station(station: StationRecord) -> PlacesShowResponse {
         .parse::<f64>()
         .expect("Failed to parse longitude");
 
-    let geo_position = ApiGeoPosition {
+    let geo_position = OsdmGeoPosition {
         latitude: latitude,
         longitude: longitude,
     };
 
-    let place = ApiPlace {
+    let place = OsdmPlace {
         id: station.id,
         object_type: "StopPlace".into(),
         alternative_ids: vec![],
         geo_position,
         _links: vec![],
     };
-    let response = ApiPlaceResponse {
+    let response = OsdmPlaceResponse {
         places: vec![place],
     };
 
@@ -95,7 +64,7 @@ fn show_found_station(station: StationRecord) -> PlacesShowResponse {
 }
 
 fn show_not_found(id: u64) -> PlacesShowResponse {
-    let api_problem = ApiProblem {
+    let api_problem = OsdmProblem {
         code: String::from("not-found"),
         title: String::from(format!("Could not find place with id #{}", id)),
     };

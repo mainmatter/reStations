@@ -2,7 +2,7 @@ use googletest::prelude::{assert_that, eq};
 use restations_macros::test;
 use restations_web::test_helpers::{BodyExt, RouterExt, TestContext};
 
-use restations_web::controllers::places::{ApiPlaceResponse, ApiProblem};
+use restations_web::types::osdm::*;
 use restations_web::db;
 
 use restations_web::types::station_record::StationRecord;
@@ -22,7 +22,7 @@ async fn test_show_ok(context: &TestContext) {
     let response = context.app.request("/places/1").send().await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: ApiPlaceResponse = response.into_body().into_json::<ApiPlaceResponse>().await;
+    let api_place: OsdmPlaceResponse = response.into_body().into_json::<OsdmPlaceResponse>().await;
 
     assert_that!(api_place.places.len(), eq(1));
     let place = &api_place.places[0];
@@ -40,7 +40,7 @@ async fn test_show_not_found(context: &TestContext) {
     let response = context.app.request("/places/1").send().await;
     assert_that!(response.status(), eq(404));
 
-    let problem: ApiProblem = response.into_body().into_json::<ApiProblem>().await;
+    let problem: OsdmProblem = response.into_body().into_json::<OsdmProblem>().await;
 
     assert_that!(problem.code, eq("not-found"));
     assert_that!(problem.title, eq("Could not find place with id #1"));
