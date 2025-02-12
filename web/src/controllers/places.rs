@@ -1,8 +1,24 @@
-use super::super::db;
+use crate::db;
 use crate::state::SharedAppState;
+use crate::types::station_record::StationRecord;
 use axum::extract::{Path, State};
-use axum::response::Json;
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Json, Response};
 use serde::{Deserialize, Serialize};
+
+pub enum PlacesShowResponse {
+    Ok(ApiPlaceResponse),
+    NotFound(ApiProblem),
+}
+
+impl IntoResponse for PlacesShowResponse {
+    fn into_response(self) -> Response {
+        match self {
+            Self::Ok(body) => (StatusCode::OK, Json(body)).into_response(),
+            Self::NotFound(body) => (StatusCode::NOT_FOUND, Json(body)).into_response(),
+        }
+    }
+}
 
 #[derive(Deserialize, Serialize)]
 pub struct ApiPlaceResponse {
@@ -29,11 +45,27 @@ pub struct ApiLink {
     value: String,
 }
 
+#[derive(Deserialize, Serialize)]
+pub struct ApiProblem {
+    pub code: String,
+    pub title: String,
+}
+
 #[axum::debug_handler]
-pub async fn show(State(app_state): State<SharedAppState>, Path(id): Path<u64>) -> Json<ApiPlaceResponse> {
+pub async fn show(
+    State(app_state): State<SharedAppState>,
+    Path(id): Path<u64>,
+) -> PlacesShowResponse {
     let conn = app_state.pool.get().unwrap();
 
-    let station = db::find_station(&conn, id).unwrap();
+    match db::find_station(&conn, id) {
+        Ok(station) => show_found_station(station),
+        Err(db::DbError::RecordNotFound(_msg)) => show_not_found(id),
+        _ => todo!("Unexpected error at places::show"),
+    }
+}
+
+fn show_found_station(station: StationRecord) -> PlacesShowResponse {
     let latitude = station
         .latitude
         .parse::<f64>()
@@ -59,5 +91,13 @@ pub async fn show(State(app_state): State<SharedAppState>, Path(id): Path<u64>) 
         places: vec![place],
     };
 
-    Json(response)
+    PlacesShowResponse::Ok(response)
+}
+
+fn show_not_found(id: u64) -> PlacesShowResponse {
+    let api_problem = ApiProblem {
+        code: String::from("not-found"),
+        title: String::from(format!("Could not find place with id #{}", id)),
+    };
+    PlacesShowResponse::NotFound(api_problem)
 }

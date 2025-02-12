@@ -11,6 +11,9 @@ pub enum DbError {
 
     #[error("Database error: {0}")]
     Database(String),
+
+    #[error("RecordNotFound: {0}")]
+    RecordNotFound(String),
 }
 
 impl From<rusqlite::Error> for DbError {
@@ -49,8 +52,13 @@ pub fn find_station(db: &Connection, id: u64) -> Result<StationRecord, DbError> 
         Ok(from_row_with_columns::<StationRecord>(row, &columns).unwrap())
     });
 
-    // TODO error handling
-    Ok(result.unwrap())
+    match result {
+        Ok(result) => Ok(result),
+        Err(rusqlite::Error::QueryReturnedNoRows) => Err(DbError::RecordNotFound(String::from(
+            format!("Could not find station with id #{}", id),
+        ))),
+        _ => todo!("Unexpected error at db::find_station"),
+    }
 }
 
 pub fn find_all_stations(db: &Connection, sender: Sender) -> () {
