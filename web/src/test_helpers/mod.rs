@@ -196,12 +196,7 @@ pub async fn setup() -> TestContext {
     let _config = init_config.get_or_init(|| load_config(&Environment::Test).unwrap());
 
     let pool = Arc::new(db::create_pool());
-    let app = init_routes(AppState {
-        pool: pool.clone(),
-    });
+    let app = init_routes(AppState { pool: pool.clone() });
 
-    TestContext {
-        app,
-        pool,
-    }
+    TestContext { app, pool }
 }
