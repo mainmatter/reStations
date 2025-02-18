@@ -137,7 +137,6 @@ async fn sync(pool: Arc<db::Pool>) -> Result<(), Error> {
 }
 
 async fn acquire_csv_stream() -> Result<impl tokio::io::AsyncRead + Unpin + Send, Error> {
-
     // 1. streamingly fetch csv from https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv
     // Get the response bytes as stream (https://docs.rs/futures/latest/futures/prelude/trait.Stream.html)
     let stream = reqwest::get(
