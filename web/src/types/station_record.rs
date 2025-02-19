@@ -19,14 +19,13 @@ pub struct StationRecord {
     pub parent_station_id: String,
     pub country: String,
     pub time_zone: String,
-    pub is_city: String,
-    pub is_main_station: String,
-    pub is_airport: String,
-    pub is_suggestable: String,
-    pub country_hint: String,
-    pub main_station_hint: String,
-    #[serde(flatten, with = "sncf")]
-    pub sncf: Id,
+    pub is_city: bool,
+    pub is_main_station: bool,
+    pub is_airport: bool,
+    pub is_suggestable: bool,
+    pub country_hint: bool,
+    pub main_station_hint: bool,
+    pub sncf_id: String,
     #[serde(flatten, with = "sncf_tvs")]
     pub sncf_tvs: Id,
     #[serde(flatten, with = "entur")]
@@ -75,7 +74,6 @@ pub struct StationRecord {
     pub iata_airport_code: String,
 }
 
-serde_with::with_prefix!(sncf "sncf_");
 serde_with::with_prefix!(sncf_tvs "sncf_tvs_");
 serde_with::with_prefix!(entur "entur_");
 serde_with::with_prefix!(db "db_");
