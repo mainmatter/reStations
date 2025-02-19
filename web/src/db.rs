@@ -44,18 +44,19 @@ pub fn insert_station(db: &Connection, record: &StationRecord) -> Result<usize, 
     )?)
 }
 
-pub fn find_station(db: &Connection, id: u64) -> Result<StationRecord, DbError> {
-    let mut stmt = db.prepare("SELECT * from stations where id=?")?;
+pub fn find_station(db: &Connection, place_id: &String) -> Result<StationRecord, DbError> {
+    // OSDM place id maps to station's uic
+    let mut stmt = db.prepare("SELECT * from stations where uic=?")?;
 
     let columns = columns_from_statement(&stmt);
-    let result = stmt.query_row([id], |row| {
+    let result = stmt.query_row([place_id], |row| {
         Ok(from_row_with_columns::<StationRecord>(row, &columns).unwrap())
     });
 
     match result {
         Ok(result) => Ok(result),
         Err(rusqlite::Error::QueryReturnedNoRows) => Err(DbError::RecordNotFound(String::from(
-            format!("Could not find station with id #{}", id),
+            format!("Could not find station with uic #{}", &place_id),
         ))),
         _ => todo!("Unexpected error at db::find_station"),
     }

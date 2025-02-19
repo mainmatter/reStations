@@ -2,8 +2,8 @@ use googletest::prelude::{assert_that, eq};
 use restations_macros::test;
 use restations_web::test_helpers::{BodyExt, RouterExt, TestContext};
 
-use restations_web::types::osdm::*;
 use restations_web::db;
+use restations_web::types::osdm::*;
 
 use restations_web::types::station_record::StationRecord;
 
@@ -11,25 +11,26 @@ use restations_web::types::station_record::StationRecord;
 async fn test_show_ok(context: &TestContext) {
     let dbconn = context.pool.get().unwrap();
     let _ = db::create_tables(&dbconn).expect("Could not create DB tables");
+    // Lisbon Santa Apolónia
     let test_station = StationRecord {
-        id: 1,
-        latitude: String::from("40.416729"),
-        longitude: String::from("-3.703339"),
+        uic: String::from("9430007"),
+        latitude: String::from("38.71387"),
+        longitude: String::from("-9.122271"),
         ..Default::default()
     };
     let _ = db::insert_station(&dbconn, &test_station).expect("Could not insert station in DB");
 
-    let response = context.app.request("/places/1").send().await;
+    let response = context.app.request("/places/9430007").send().await;
     assert_that!(response.status(), eq(200));
 
     let api_place: OsdmPlaceResponse = response.into_body().into_json::<OsdmPlaceResponse>().await;
 
     assert_that!(api_place.places.len(), eq(1));
     let place = &api_place.places[0];
-    assert_that!(place.id, eq(1));
+    assert_that!(place.id, eq(9430007));
     assert_that!(place.object_type, eq("StopPlace"));
-    assert_that!(place.geo_position.latitude, eq(40.416729));
-    assert_that!(place.geo_position.longitude, eq(-3.703339));
+    assert_that!(place.geo_position.latitude, eq(38.71387));
+    assert_that!(place.geo_position.longitude, eq(-9.122271));
 }
 
 #[test]
