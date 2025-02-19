@@ -20,7 +20,6 @@ test-helpers = [
 anyhow = "1.0"
 axum = { version = "0.8.1", features = ["macros"] }
 axum-streams = { version = "0.20", features = ["json"] }
-derive_builder = { version = "0.20.2", default-features = false, features = ["std"] }
 restations-config = { path = "../config" }
 
 serde = { version = "1.0", features = ["derive"] }
@@ -52,6 +51,7 @@ futures-util = { version = "0.3.31", default-features = false, features = [
     "sink",
 ] }
 serde_rusqlite = { version = "0.37.0" }
+serde_with = "3.12.0"
 
 [dev-dependencies]
 fake = "3.0"
