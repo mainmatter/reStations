@@ -25,44 +25,48 @@ pub struct StationRecord {
     pub is_suggestable: String,
     pub country_hint: String,
     pub main_station_hint: String,
-    pub sncf_id: String,
-    pub sncf_tvs_id: String,
-    pub sncf_is_enabled: String,
-    pub entur_id: String,
-    pub entur_is_enabled: String,
-    pub db_id: String,
-    pub db_is_enabled: String,
-    pub busbud_id: String,
-    pub busbud_is_enabled: String,
+    #[serde(flatten, with = "sncf")]
+    pub sncf: Id,
+    #[serde(flatten, with = "sncf_tvs")]
+    pub sncf_tvs: Id,
+    #[serde(flatten, with = "entur")]
+    pub entur: Id,
+    #[serde(flatten, with = "db")]
+    pub db: Id,
+    #[serde(flatten, with = "busbud")]
+    pub busbud: Id,
     #[serde(flatten, with = "distribusion")]
     pub distribusion: Id,
-    pub flixbus_id: String,
-    pub flixbus_is_enabled: String,
-    pub cff_id: String,
-    pub cff_is_enabled: String,
-    pub leoexpress_id: String,
-    pub leoexpress_is_enabled: String,
-    pub obb_id: String,
-    pub obb_is_enabled: String,
-    pub ouigo_id: String,
-    pub ouigo_is_enabled: String,
-    pub trenitalia_id: String,
-    pub trenitalia_is_enabled: String,
-    pub trenitalia_rtvt_id: String,
-    pub trenord_id: String,
-    pub ntv_rtiv_id: String,
-    pub ntv_id: String,
-    pub ntv_is_enabled: String,
-    pub hkx_id: String,
-    pub hkx_is_enabled: String,
-    pub renfe_id: String,
-    pub renfe_is_enabled: String,
-    pub atoc_id: String,
-    pub atoc_is_enabled: String,
-    pub benerail_id: String,
-    pub benerail_is_enabled: String,
-    pub westbahn_id: String,
-    pub westbahn_is_enabled: String,
+    #[serde(flatten, with = "flixbus")]
+    pub flixbus: Id,
+    #[serde(flatten, with = "cff")]
+    pub cff: Id,
+    #[serde(flatten, with = "leoexpress")]
+    pub leoexpress: Id,
+    #[serde(flatten, with = "obb")]
+    pub obb: Id,
+    #[serde(flatten, with = "ouigo")]
+    pub ouigo: Id,
+    #[serde(flatten, with = "trenitalia")]
+    pub trenitalia: Id,
+    #[serde(flatten, with = "trenitalia_rtvt")]
+    pub trenitalia_rtvt: Id,
+    #[serde(flatten, with = "trenord")]
+    pub trenord: Id,
+    #[serde(flatten, with = "ntv_rtiv")]
+    pub ntv_rtiv: Id,
+    #[serde(flatten, with = "ntv")]
+    pub ntv: Id,
+    #[serde(flatten, with = "hkx")]
+    pub hkx: Id,
+    #[serde(flatten, with = "renfe")]
+    pub renfe: Id,
+    #[serde(flatten, with = "atoc")]
+    pub atoc: Id,
+    #[serde(flatten, with = "benerail")]
+    pub benerail: Id,
+    #[serde(flatten, with = "westbahn")]
+    pub westbahn: Id,
     pub sncf_self_service_machine: String,
     pub same_as: String,
     #[serde(flatten, with = "info")]
@@ -71,7 +75,28 @@ pub struct StationRecord {
     pub iata_airport_code: String,
 }
 
+serde_with::with_prefix!(sncf "sncf_");
+serde_with::with_prefix!(sncf_tvs "sncf_tvs_");
+serde_with::with_prefix!(entur "entur_");
+serde_with::with_prefix!(db "db_");
+serde_with::with_prefix!(busbud "busbud_");
 serde_with::with_prefix!(distribusion "distribusion_");
+serde_with::with_prefix!(flixbus "flixbus_");
+serde_with::with_prefix!(cff "cff_");
+serde_with::with_prefix!(leoexpress "leoexpress_");
+serde_with::with_prefix!(obb "obb_");
+serde_with::with_prefix!(ouigo "ouigo_");
+serde_with::with_prefix!(trenitalia "trenitalia_");
+serde_with::with_prefix!(trenitalia_rtvt "trenitalia_rtvt_");
+serde_with::with_prefix!(trenord "trenord_");
+serde_with::with_prefix!(ntv_rtiv "ntv_rtiv_");
+serde_with::with_prefix!(ntv "ntv_");
+serde_with::with_prefix!(hkx "hkx_");
+serde_with::with_prefix!(renfe "renfe_");
+serde_with::with_prefix!(atoc "atoc_");
+serde_with::with_prefix!(benerail "benerail_");
+serde_with::with_prefix!(westbahn "westbahn_");
+
 serde_with::with_prefix!(info "info:");
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
@@ -131,7 +156,7 @@ impl Id {
             {
                 match v {
                     "t" => Ok(true),
-                    "f" => Ok(false),
+                    "f" => Ok(true),
                     s => Err(E::invalid_value(
                         serde::de::Unexpected::Str(s),
                         &r#""t" or "f""#,
