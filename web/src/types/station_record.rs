@@ -1,4 +1,5 @@
-use serde::{de::Error, Serialize};
+
+use serde::{de::Error, Deserialize, Serialize};
 
 /// Single record in the [stations.csv](https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv) database.
 #[derive(Debug, Serialize, Default, PartialEq, derive_builder::Builder)]
@@ -149,6 +150,23 @@ impl<'de> serde::Deserialize<'de> for StationRecord {
                 let mut record = StationRecordBuilder::default();
                 let mut distribusion = IdBuilder::default();
                 let mut info = InfoBuilder::default();
+                
+                /*
+                   todo add vec for stashed fields
+                   - field name
+                   - prefix?
+                   - value, probably deserialized to  _serde::__private::de::Content or something similar (Vec<u8>?)
+                   
+                   for each key of map
+                    - if it's value is held directly in StationRecord, then just deserialze the value and set it
+                    - if not, stash key and value
+                
+                   for each stashed k-v pair
+                    - try to deserialize in each of the structs using some kind of visitor pattern
+                    - set the correct field of the record builder with the result
+                    
+                */
+                
                 while let Some(field) = map.next_key::<&'de str>()? {
                     match field {
                         "id" => record.id(map.next_value()?).yeet(),
@@ -243,7 +261,6 @@ impl<'de> serde::Deserialize<'de> for StationRecord {
                     };
                 }
                 let distribusion = distribusion.build().map_err_deser()?;
-                let distribusion = distribusion.try_into().map_err(A::Error::custom)?;
                 record.distribusion(distribusion);
 
                 let info = info.build().map_err_deser()?;
