@@ -18,7 +18,7 @@ jobs:
         with:
           components: rustfmt
       - name: Enforce formatting
-        run: cargo fmt --check
+        run: ./scripts/format
 
   lint:
     name: Lint
@@ -29,4 +29,4 @@ jobs:
         with:
           components: clippy
       - name: Linting
-        run: cargo clippy
+        run: ./scripts/lint
