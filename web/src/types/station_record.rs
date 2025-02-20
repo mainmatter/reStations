@@ -25,9 +25,9 @@ pub struct StationRecord {
     pub is_suggestable: bool,
     pub country_hint: bool,
     pub main_station_hint: bool,
-    pub sncf_id: String,
-    #[serde(flatten, with = "sncf_tvs")]
-    pub sncf_tvs: Id,
+    #[serde(flatten, with = "sncf")]
+    pub sncf: Id,
+    pub sncf_tvs_id: String,
     #[serde(flatten, with = "entur")]
     pub entur: Id,
     #[serde(flatten, with = "db")]
@@ -48,12 +48,9 @@ pub struct StationRecord {
     pub ouigo: Id,
     #[serde(flatten, with = "trenitalia")]
     pub trenitalia: Id,
-    #[serde(flatten, with = "trenitalia_rtvt")]
-    pub trenitalia_rtvt: Id,
-    #[serde(flatten, with = "trenord")]
-    pub trenord: Id,
-    #[serde(flatten, with = "ntv_rtiv")]
-    pub ntv_rtiv: Id,
+    pub trenitalia_rtvt_id: String,
+    pub trenord_id: String,
+    pub ntv_rtiv_id: String,
     #[serde(flatten, with = "ntv")]
     pub ntv: Id,
     #[serde(flatten, with = "hkx")]
@@ -74,7 +71,7 @@ pub struct StationRecord {
     pub iata_airport_code: String,
 }
 
-serde_with::with_prefix!(sncf_tvs "sncf_tvs_");
+serde_with::with_prefix!(sncf "sncf_");
 serde_with::with_prefix!(entur "entur_");
 serde_with::with_prefix!(db "db_");
 serde_with::with_prefix!(busbud "busbud_");
@@ -85,9 +82,6 @@ serde_with::with_prefix!(leoexpress "leoexpress_");
 serde_with::with_prefix!(obb "obb_");
 serde_with::with_prefix!(ouigo "ouigo_");
 serde_with::with_prefix!(trenitalia "trenitalia_");
-serde_with::with_prefix!(trenitalia_rtvt "trenitalia_rtvt_");
-serde_with::with_prefix!(trenord "trenord_");
-serde_with::with_prefix!(ntv_rtiv "ntv_rtiv_");
 serde_with::with_prefix!(ntv "ntv_");
 serde_with::with_prefix!(hkx "hkx_");
 serde_with::with_prefix!(renfe "renfe_");
