@@ -55,14 +55,15 @@ pub fn find_station(db: &Connection, place_id: &String) -> Result<StationRecord,
 
     match result {
         Ok(result) => Ok(result),
-        Err(rusqlite::Error::QueryReturnedNoRows) => Err(DbError::RecordNotFound(String::from(
-            format!("Could not find station with uic #{}", &place_id),
+        Err(rusqlite::Error::QueryReturnedNoRows) => Err(DbError::RecordNotFound(format!(
+            "Could not find station with uic #{}",
+            &place_id
         ))),
         _ => todo!("Unexpected error at db::find_station"),
     }
 }
 
-pub fn find_all_stations(db: &Connection, sender: Sender) -> () {
+pub fn find_all_stations(db: &Connection, sender: Sender) {
     let mut stmt = db.prepare("SELECT * from stations").unwrap();
 
     let columns = columns_from_statement(&stmt);
