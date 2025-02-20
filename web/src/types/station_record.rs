@@ -148,7 +148,7 @@ impl Id {
             {
                 match v {
                     "t" => Ok(true),
-                    "f" => Ok(true),
+                    "f" => Ok(false),
                     s => Err(E::invalid_value(
                         serde::de::Unexpected::Str(s),
                         &r#""t" or "f""#,
