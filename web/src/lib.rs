@@ -16,7 +16,6 @@ use tracing_subscriber::{filter::EnvFilter, layer::SubscriberExt, util::Subscrib
 use types::station_record::StationRecord;
 
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
-use reqwest;
 
 use tokio_util::{io::StreamReader, sync::PollSender};
 

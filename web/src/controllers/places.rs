@@ -45,8 +45,8 @@ fn show_found_station(station: StationRecord) -> PlacesShowResponse {
         .expect("Failed to parse longitude");
 
     let geo_position = OsdmGeoPosition {
-        latitude: latitude,
-        longitude: longitude,
+        latitude,
+        longitude,
     };
 
     let place = OsdmPlace {
@@ -67,7 +67,7 @@ fn show_found_station(station: StationRecord) -> PlacesShowResponse {
 fn show_not_found(place_id: String) -> PlacesShowResponse {
     let api_problem = OsdmProblem {
         code: String::from("not-found"),
-        title: String::from(format!("Could not find place with id #{}", place_id)),
+        title: format!("Could not find place with id #{}", place_id),
     };
     PlacesShowResponse::NotFound(api_problem)
 }

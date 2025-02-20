@@ -17,7 +17,6 @@ pub type SharedAppState = Arc<AppState>;
 /// Initializes the application state.
 ///
 /// This function creates an [`AppState`] based on the current [`restations_config::Config`].
-
 pub async fn init_app_state(_config: Config) -> Result<AppState, crate::error::Error> {
     let pool = db::create_pool();
 
