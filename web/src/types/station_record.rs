@@ -93,24 +93,24 @@ serde_with::with_prefix!(info "info:");
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct Info {
-    pub de: String,
-    pub en: String,
-    pub es: String,
-    pub fr: String,
-    pub it: String,
-    pub nb: String,
-    pub nl: String,
-    pub cs: String,
-    pub da: String,
-    pub hu: String,
-    pub ja: String,
-    pub ko: String,
-    pub pl: String,
-    pub pt: String,
-    pub ru: String,
-    pub sv: String,
-    pub tr: String,
-    pub zh: String,
+    pub de: Option<String>,
+    pub en: Option<String>,
+    pub es: Option<String>,
+    pub fr: Option<String>,
+    pub it: Option<String>,
+    pub nb: Option<String>,
+    pub nl: Option<String>,
+    pub cs: Option<String>,
+    pub da: Option<String>,
+    pub hu: Option<String>,
+    pub ja: Option<String>,
+    pub ko: Option<String>,
+    pub pl: Option<String>,
+    pub pt: Option<String>,
+    pub ru: Option<String>,
+    pub sv: Option<String>,
+    pub tr: Option<String>,
+    pub zh: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Default, PartialEq)]
@@ -166,6 +166,27 @@ impl Id {
                     0 => Ok(false),
                     _ => Err(E::invalid_value(
                         serde::de::Unexpected::Signed(v),
+                        &"0 or 1",
+                    )),
+                }
+            }
+
+            fn visit_bool<E>(self, v: bool) -> Result<Self::Value, E>
+            where
+                E: Error,
+            {
+                Ok(v)
+            }
+
+            fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
+            where
+                E: Error,
+            {
+                match v {
+                    1 => Ok(true),
+                    0 => Ok(false),
+                    _ => Err(E::invalid_value(
+                        serde::de::Unexpected::Unsigned(v),
                         &"0 or 1",
                     )),
                 }
