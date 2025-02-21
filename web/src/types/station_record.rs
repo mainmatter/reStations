@@ -142,6 +142,7 @@ impl Id {
                 write!(formatter, r#"either "t" or "f""#)
             }
 
+            // Values incoming from boolean fields in the CSV
             fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
             where
                 E: Error,
@@ -155,7 +156,22 @@ impl Id {
                     )),
                 }
             }
+
+            fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
+            where
+                E: Error,
+            {
+                match v {
+                    1 => Ok(true),
+                    0 => Ok(false),
+                    _ => Err(E::invalid_value(
+                        serde::de::Unexpected::Signed(v),
+                        &"0 or 1",
+                    )),
+                }
+            }
         }
-        deserializer.deserialize_str(IsEnabledVisitor)
+
+        deserializer.deserialize_any(IsEnabledVisitor)
     }
 }
