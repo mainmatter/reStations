@@ -35,18 +35,9 @@ pub async fn show(
 }
 
 fn show_found_station(station: StationRecord) -> PlacesShowResponse {
-    let latitude = station
-        .latitude
-        .parse::<f64>()
-        .expect("Failed to parse latitude");
-    let longitude = station
-        .longitude
-        .parse::<f64>()
-        .expect("Failed to parse longitude");
-
     let geo_position = OsdmGeoPosition {
-        latitude,
-        longitude,
+        latitude: station.latitude.unwrap(),
+        longitude: station.longitude.unwrap(),
     };
 
     let place = OsdmPlace {
