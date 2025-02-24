@@ -19,11 +19,17 @@ pub struct StationRecord {
     pub parent_station_id: String,
     pub country: String,
     pub time_zone: String,
+    #[serde(deserialize_with = "BoolDeserializer::deserialize")]
     pub is_city: bool,
+    #[serde(deserialize_with = "BoolDeserializer::deserialize")]
     pub is_main_station: bool,
+    #[serde(deserialize_with = "BoolDeserializer::deserialize")]
     pub is_airport: bool,
+    #[serde(deserialize_with = "BoolDeserializer::deserialize")]
     pub is_suggestable: bool,
+    #[serde(deserialize_with = "BoolDeserializer::deserialize")]
     pub country_hint: bool,
+    #[serde(deserialize_with = "BoolDeserializer::deserialize")]
     pub main_station_hint: bool,
     #[serde(flatten, with = "sncf")]
     pub sncf: Id,
@@ -116,7 +122,7 @@ pub struct Info {
 #[derive(Clone, Debug, Deserialize, Serialize, Default, PartialEq)]
 pub struct Id {
     id: Option<String>,
-    #[serde(deserialize_with = "Id::parse_is_enabled")]
+    #[serde(deserialize_with = "BoolDeserializer::deserialize")]
     is_enabled: bool,
 }
 
@@ -128,8 +134,12 @@ impl Id {
     pub fn is_enabled(&self) -> bool {
         self.is_enabled
     }
+}
 
-    fn parse_is_enabled<'de, D>(deserializer: D) -> Result<bool, D::Error>
+pub struct BoolDeserializer;
+
+impl BoolDeserializer {
+    fn deserialize<'de, D>(deserializer: D) -> Result<bool, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -157,6 +167,7 @@ impl Id {
                 }
             }
 
+            // Values incoming from boolean fields in the sqlite db
             fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
             where
                 E: Error,
@@ -176,20 +187,6 @@ impl Id {
                 E: Error,
             {
                 Ok(v)
-            }
-
-            fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
-            where
-                E: Error,
-            {
-                match v {
-                    1 => Ok(true),
-                    0 => Ok(false),
-                    _ => Err(E::invalid_value(
-                        serde::de::Unexpected::Unsigned(v),
-                        &"0 or 1",
-                    )),
-                }
             }
         }
 
