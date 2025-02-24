@@ -127,6 +127,12 @@ pub struct Id {
 }
 
 impl Id {
+    // TODO
+    // It turns out some of the *_id fields are integers in the CSV.
+    // Trainline's repo doesn't specify how they should be treated, and we don't yet
+    // know whether there'll be an expectation by downstream consumers
+    //
+    // For simplicity's sake, we can just convert them to strings for now
     pub fn id(&self) -> Option<&String> {
         self.id.as_ref()
     }
