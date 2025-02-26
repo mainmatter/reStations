@@ -19,7 +19,7 @@ pub struct OsdmPlace {
     pub id: i64,
     pub object_type: String,
     pub alternative_ids: Vec<String>,
-    pub geo_position: OsdmGeoPosition,
+    pub geo_position: Option<OsdmGeoPosition>,
     pub _links: Vec<OsdmLink>,
 }
 

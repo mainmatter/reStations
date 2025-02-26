@@ -14,15 +14,15 @@ async fn test_list_ok(context: &TestContext) {
     // Lisbon Santa Apolónia
     let station1 = StationRecord {
         uic: String::from("9430007"),
-        latitude: String::from("38.71387"),
-        longitude: String::from("-9.122271"),
+        latitude: Some(38.71387),
+        longitude: Some(-9.122271),
         ..Default::default()
     };
     // Sevilla Santa Justa
     let station2 = StationRecord {
         uic: String::from("7151003"),
-        latitude: String::from("37.391925"),
-        longitude: String::from("-5.975264"),
+        latitude: Some(37.391925),
+        longitude: Some(-5.975264),
         ..Default::default()
     };
     let _ = db::insert_station(&dbconn, &station1).expect("Could not insert station in DB");
@@ -37,8 +37,11 @@ async fn test_list_ok(context: &TestContext) {
     let place = &api_place.places[0];
     assert_that!(place.id, eq(9430007));
     assert_that!(place.object_type, eq("StopPlace"));
-    assert_that!(place.geo_position.latitude, eq(38.71387));
-    assert_that!(place.geo_position.longitude, eq(-9.122271));
+    assert_that!(place.geo_position.as_ref().unwrap().latitude, eq(38.71387));
+    assert_that!(
+        place.geo_position.as_ref().unwrap().longitude,
+        eq(-9.122271)
+    );
 }
 
 #[test]
@@ -63,8 +66,11 @@ async fn test_show_ok(context: &TestContext) {
     let place = &api_place.places[0];
     assert_that!(place.id, eq(9430007));
     assert_that!(place.object_type, eq("StopPlace"));
-    assert_that!(place.geo_position.latitude, eq(38.71387));
-    assert_that!(place.geo_position.longitude, eq(-9.122271));
+    assert_that!(place.geo_position.as_ref().unwrap().latitude, eq(38.71387));
+    assert_that!(
+        place.geo_position.as_ref().unwrap().longitude,
+        eq(-9.122271)
+    );
 }
 
 #[test]

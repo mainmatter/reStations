@@ -21,6 +21,16 @@ impl IntoResponse for PlacesShowResponse {
 }
 
 #[axum::debug_handler]
+pub async fn list(State(app_state): State<SharedAppState>) -> PlacesShowResponse {
+    let conn = app_state.pool.get().unwrap();
+
+    match db::find_all_stations(&conn) {
+        Ok(stations) => list_found_station(stations),
+        _ => todo!("Unexpected error at places::list"),
+    }
+}
+
+#[axum::debug_handler]
 pub async fn show(
     State(app_state): State<SharedAppState>,
     Path(place_id): Path<String>, // TODO: fix uic type at sync stage, like latitude and longitude
@@ -34,25 +44,46 @@ pub async fn show(
     }
 }
 
+fn list_found_station(stations: Vec<StationRecord>) -> PlacesShowResponse {
+    let mut places: Vec<OsdmPlace> = Vec::with_capacity(stations.len());
+
+    for station in stations {
+        places.push(station_to_osdm_place(station));
+    }
+
+    let response = OsdmPlaceResponse { places };
+
+    PlacesShowResponse::Ok(response)
+}
+
 fn show_found_station(station: StationRecord) -> PlacesShowResponse {
-    let geo_position = OsdmGeoPosition {
-        latitude: station.latitude.unwrap(),
-        longitude: station.longitude.unwrap(),
+    let response = OsdmPlaceResponse {
+        places: vec![station_to_osdm_place(station)],
     };
 
-    let place = OsdmPlace {
+    PlacesShowResponse::Ok(response)
+}
+
+fn station_to_osdm_place(station: StationRecord) -> OsdmPlace {
+    let latitude = station.latitude;
+    let longitude = station.longitude;
+
+    let mut geo_position: Option<OsdmGeoPosition> = None;
+    if latitude.is_some() && longitude.is_some() {
+        geo_position = Some(OsdmGeoPosition {
+            latitude: latitude.unwrap(),
+            longitude: longitude.unwrap(),
+        });
+    }
+
+    OsdmPlace {
         // TODO: fix uic type at sync stage, like latitude and longitude
         id: station.uic.parse::<i64>().expect("Failed to parse uic"),
         object_type: "StopPlace".into(),
         alternative_ids: vec![],
         geo_position,
         _links: vec![],
-    };
-    let response = OsdmPlaceResponse {
-        places: vec![place],
-    };
-
-    PlacesShowResponse::Ok(response)
+    }
 }
 
 fn show_not_found(place_id: String) -> PlacesShowResponse {

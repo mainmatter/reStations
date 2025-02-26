@@ -11,6 +11,7 @@ pub fn init_routes(app_state: AppState) -> Router {
     let shared_app_state = Arc::new(app_state);
 
     Router::new()
+        .route("/places", get(places::list))
         .route("/places/{id}", get(places::show))
         .route("/stations", get(stations::list))
         .with_state(shared_app_state)
