@@ -215,7 +215,7 @@ pub fn find_station(db: &Connection, place_id: &String) -> Result<StationRecord,
     }
 }
 
-pub fn find_all_stations(db: &Connection, sender: Sender) {
+pub fn stream_all_stations(db: &Connection, sender: Sender) {
     let mut stmt = db.prepare("SELECT * from stations").unwrap();
 
     let columns = columns_from_statement(&stmt);
