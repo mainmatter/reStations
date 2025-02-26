@@ -11,6 +11,8 @@ pub enum PlacesShowResponse {
     NotFound(OsdmProblem),
 }
 
+type PlacesListResponse = PlacesShowResponse;
+
 impl IntoResponse for PlacesShowResponse {
     fn into_response(self) -> Response {
         match self {
@@ -21,7 +23,7 @@ impl IntoResponse for PlacesShowResponse {
 }
 
 #[axum::debug_handler]
-pub async fn list(State(app_state): State<SharedAppState>) -> PlacesShowResponse {
+pub async fn list(State(app_state): State<SharedAppState>) -> PlacesListResponse {
     let conn = app_state.pool.get().unwrap();
 
     match db::find_all_stations(&conn) {
