@@ -32,43 +32,43 @@ pub struct StationRecord {
     #[serde(deserialize_with = "BoolDeserializer::deserialize")]
     pub main_station_hint: bool,
     #[serde(flatten, with = "sncf")]
-    pub sncf: Id,
+    pub sncf: ProviderId,
     pub sncf_tvs_id: String,
     #[serde(flatten, with = "entur")]
-    pub entur: Id,
+    pub entur: ProviderId,
     #[serde(flatten, with = "db")]
-    pub db: Id,
+    pub db: ProviderId,
     #[serde(flatten, with = "busbud")]
-    pub busbud: Id,
+    pub busbud: ProviderId,
     #[serde(flatten, with = "distribusion")]
-    pub distribusion: Id,
+    pub distribusion: ProviderId,
     #[serde(flatten, with = "flixbus")]
-    pub flixbus: Id,
+    pub flixbus: ProviderId,
     #[serde(flatten, with = "cff")]
-    pub cff: Id,
+    pub cff: ProviderId,
     #[serde(flatten, with = "leoexpress")]
-    pub leoexpress: Id,
+    pub leoexpress: ProviderId,
     #[serde(flatten, with = "obb")]
-    pub obb: Id,
+    pub obb: ProviderId,
     #[serde(flatten, with = "ouigo")]
-    pub ouigo: Id,
+    pub ouigo: ProviderId,
     #[serde(flatten, with = "trenitalia")]
-    pub trenitalia: Id,
+    pub trenitalia: ProviderId,
     pub trenitalia_rtvt_id: String,
     pub trenord_id: String,
     pub ntv_rtiv_id: String,
     #[serde(flatten, with = "ntv")]
-    pub ntv: Id,
+    pub ntv: ProviderId,
     #[serde(flatten, with = "hkx")]
-    pub hkx: Id,
+    pub hkx: ProviderId,
     #[serde(flatten, with = "renfe")]
-    pub renfe: Id,
+    pub renfe: ProviderId,
     #[serde(flatten, with = "atoc")]
-    pub atoc: Id,
+    pub atoc: ProviderId,
     #[serde(flatten, with = "benerail")]
-    pub benerail: Id,
+    pub benerail: ProviderId,
     #[serde(flatten, with = "westbahn")]
-    pub westbahn: Id,
+    pub westbahn: ProviderId,
     pub sncf_self_service_machine: String,
     pub same_as: String,
     #[serde(flatten, with = "info")]
@@ -120,14 +120,14 @@ pub struct Info {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Default, PartialEq)]
-pub struct Id {
-    #[serde(deserialize_with = "Id::deserialize_provider_id")]
+pub struct ProviderId {
+    #[serde(deserialize_with = "ProviderId::deserialize")]
     id: Option<String>,
     #[serde(deserialize_with = "BoolDeserializer::deserialize")]
     is_enabled: bool,
 }
 
-impl Id {
+impl ProviderId {
     pub fn id(&self) -> Option<&String> {
         self.id.as_ref()
     }
@@ -136,7 +136,7 @@ impl Id {
         self.is_enabled
     }
 
-    fn deserialize_provider_id<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+    fn deserialize<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -164,7 +164,6 @@ impl Id {
             where
                 E: Error,
             {
-                println!("Received integer provider ID: {}", v);
                 Ok(Some(v.to_string()))
             }
 
