@@ -223,7 +223,7 @@ impl BoolDeserializer {
                 }
             }
 
-            // Values incoming from boolean fields in the sqlite db
+            // Values incoming from boolean fields in the SQLite db
             fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
             where
                 E: Error,
