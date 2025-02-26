@@ -121,24 +121,75 @@ pub struct Info {
 
 #[derive(Clone, Debug, Deserialize, Serialize, Default, PartialEq)]
 pub struct Id {
+    #[serde(deserialize_with = "Id::deserialize_provider_id")]
     id: Option<String>,
     #[serde(deserialize_with = "BoolDeserializer::deserialize")]
     is_enabled: bool,
 }
 
 impl Id {
-    // TODO
-    // It turns out some of the *_id fields are integers in the CSV.
-    // Trainline's repo doesn't specify how they should be treated, and we don't yet
-    // know whether there'll be an expectation by downstream consumers
-    //
-    // For simplicity's sake, we can just convert them to strings for now
     pub fn id(&self) -> Option<&String> {
         self.id.as_ref()
     }
 
     pub fn is_enabled(&self) -> bool {
         self.is_enabled
+    }
+
+    fn deserialize_provider_id<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct ProviderIdVisitor;
+
+        impl Visitor<'_> for ProviderIdVisitor {
+            type Value = Option<String>;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(formatter, r#"a string, integer, or null"#)
+            }
+
+            // Values incoming from provider id fields in the CSV
+            fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
+            where
+                E: Error,
+            {
+                Ok(Some(v.to_string()))
+            }
+
+            // Values incoming from provider id fields in the CSV
+            // Believe it or not, the deserializer interprets "NAN" strings as floats (NaN) :P
+            // There's actually a station with that provider ID.
+            fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
+            where
+                E: Error,
+            {
+                println!("Received integer provider ID: {}", v);
+                Ok(Some(v.to_string()))
+            }
+
+            // Values incoming from provider id fields in the CSV
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: Error,
+            {
+                if v.is_empty() {
+                    Ok(None)
+                } else {
+                    Ok(Some(v.to_string()))
+                }
+            }
+
+            // Values incoming from provider id fields in the CSV
+            fn visit_none<E>(self) -> Result<Self::Value, E>
+            where
+                E: Error,
+            {
+                Ok(None)
+            }
+        }
+
+        deserializer.deserialize_any(ProviderIdVisitor)
     }
 }
 
