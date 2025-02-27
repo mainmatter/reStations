@@ -14,8 +14,8 @@ async fn test_show_ok(context: &TestContext) {
     // Lisbon Santa Apolónia
     let test_station = StationRecord {
         uic: String::from("9430007"),
-        latitude: String::from("38.71387"),
-        longitude: String::from("-9.122271"),
+        latitude: Some(38.71387),
+        longitude: Some(-9.122271),
         ..Default::default()
     };
     let _ = db::insert_station(&dbconn, &test_station).expect("Could not insert station in DB");

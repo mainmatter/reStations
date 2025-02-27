@@ -113,24 +113,13 @@ async fn sync(pool: Arc<db::Pool>) -> Result<(), Error> {
         Ok(())
     });
 
-    // 1. streamingly fetch csv from https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv
-    // Get the response bytes as stream (https://docs.rs/futures/latest/futures/prelude/trait.Stream.html)
-    let stream = reqwest::get(
-        "https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv",
-    )
-    .await?
-    .bytes_stream()
-    // map items from a Result<Bytes, reqwest::Error> to Result<Bytes, tokio::io::Error>,
-    // in order for the stream to be wrapped in a StreamReader
-    .map(|r| r.map_err(tokio::io::Error::other));
-    // Wrap the stream in a StreamReader, which implements AsyncRead, the trait csv-async is built around
-    let reader = StreamReader::new(stream);
+    let csv_stream = acquire_csv_stream().await?;
 
     // 2. Pipe the data into https://github.com/gwierzchowski/csv-async, and deserialize to [`stations_core::data::StationRecord`]
     let mut deserializer = csv_async::AsyncReaderBuilder::new()
         .has_headers(true)
         .delimiter(b';')
-        .create_deserializer(reader);
+        .create_deserializer(csv_stream);
 
     let records = deserializer
         .deserialize::<StationRecord>()
@@ -145,4 +134,19 @@ async fn sync(pool: Arc<db::Pool>) -> Result<(), Error> {
 
     // Wait for the database task to finish
     db_task.await.unwrap()
+}
+
+async fn acquire_csv_stream() -> Result<impl tokio::io::AsyncRead + Unpin + Send, Error> {
+    // 1. streamingly fetch csv from https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv
+    // Get the response bytes as stream (https://docs.rs/futures/latest/futures/prelude/trait.Stream.html)
+    let stream = reqwest::get(
+        "https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv",
+    )
+    .await?
+    .bytes_stream()
+    // map items from a Result<Bytes, reqwest::Error> to Result<Bytes, tokio::io::Error>,
+    // in order for the stream to be wrapped in a StreamReader
+    .map(|r| r.map_err(tokio::io::Error::other));
+    // Wrap the stream in a StreamReader, which implements AsyncRead, the trait csv-async is built around
+    Ok(Box::new(StreamReader::new(stream)))
 }

@@ -51,6 +51,7 @@ futures-util = { version = "0.3.31", default-features = false, features = [
     "sink",
 ] }
 serde_rusqlite = { version = "0.37.0" }
+serde_with = "3.12.0"
 
 [dev-dependencies]
 fake = "3.0"
