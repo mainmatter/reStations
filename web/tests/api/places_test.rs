@@ -37,10 +37,12 @@ async fn test_list_ok(context: &TestContext) {
     let place = &api_place.places[0];
     assert_that!(place.id, eq("9430007"));
     assert_that!(place.object_type, eq("StopPlace"));
-    assert_that!(place.geo_position.as_ref().unwrap().latitude, eq(38.71387));
     assert_that!(
-        place.geo_position.as_ref().unwrap().longitude,
-        eq(-9.122271)
+        place.geo_position.as_ref().unwrap(),
+        eq(&OsdmGeoPosition {
+            latitude: 38.71387,
+            longitude: -9.122271
+        })
     );
 }
 
@@ -66,10 +68,12 @@ async fn test_show_ok(context: &TestContext) {
     let place = &api_place.places[0];
     assert_that!(place.id, eq("9430007"));
     assert_that!(place.object_type, eq("StopPlace"));
-    assert_that!(place.geo_position.as_ref().unwrap().latitude, eq(38.71387));
     assert_that!(
-        place.geo_position.as_ref().unwrap().longitude,
-        eq(-9.122271)
+        place.geo_position.as_ref().unwrap(),
+        eq(&OsdmGeoPosition {
+            latitude: 38.71387,
+            longitude: -9.122271
+        })
     );
 }
 
