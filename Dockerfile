@@ -2,7 +2,7 @@
 # Instead of using buildpacks, we're using container environment for building and running the application.
 # This builds a server binary and copies a start.sh script.
 
-FROM rust:1.80 as builder
+FROM rust:1.84 as builder
 WORKDIR /usr/src/restations-builder
 COPY . .
 
