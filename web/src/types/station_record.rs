@@ -136,6 +136,8 @@ impl ProviderId {
         self.is_enabled
     }
 
+    // TODO extract into source-specific deserializer
+    // ie CSVdeserializer, explictly csv_async deserialization
     fn deserialize<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
     where
         D: Deserializer<'de>,
@@ -195,6 +197,9 @@ impl ProviderId {
 pub struct BoolDeserializer;
 
 impl BoolDeserializer {
+    // TODO extract into source-specific deserializer
+    // ie CSVdeserializer, explictly csv_async deserialization for 't' and 'f' in boolean fields
+    // and SQLiteDeserializer for incoming 1s and 0s in boolean fields in the db
     fn deserialize<'de, D>(deserializer: D) -> Result<bool, D::Error>
     where
         D: Deserializer<'de>,
