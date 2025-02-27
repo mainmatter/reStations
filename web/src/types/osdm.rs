@@ -16,7 +16,7 @@ pub struct OsdmLink {
 
 #[derive(Deserialize, Serialize)]
 pub struct OsdmPlace {
-    pub id: i64,
+    pub id: String,
     pub object_type: String,
     pub alternative_ids: Vec<String>,
     pub geo_position: Option<OsdmGeoPosition>,
