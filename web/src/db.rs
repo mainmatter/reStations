@@ -215,7 +215,26 @@ pub fn find_station(db: &Connection, place_id: &String) -> Result<StationRecord,
     }
 }
 
-pub fn find_all_stations(db: &Connection, sender: Sender) {
+pub fn find_all_stations(db: &Connection) -> Result<Vec<StationRecord>, DbError> {
+    let mut stmt = db
+        .prepare("SELECT * from stations WHERE uic IS NOT NULL AND uic != ''")
+        .unwrap();
+
+    let columns = columns_from_statement(&stmt);
+    let rows = stmt
+        .query_map([], |row| {
+            Ok(from_row_with_columns::<StationRecord>(row, &columns).unwrap())
+        })
+        .unwrap();
+
+    let mut result: Vec<StationRecord> = Vec::new();
+    for row in rows {
+        result.push(row.unwrap());
+    }
+    Ok(result)
+}
+
+pub fn stream_all_stations(db: &Connection, sender: Sender) {
     let mut stmt = db.prepare("SELECT * from stations").unwrap();
 
     let columns = columns_from_statement(&stmt);

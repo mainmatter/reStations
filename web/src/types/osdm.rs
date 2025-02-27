@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct OsdmGeoPosition {
     pub latitude: f32,
     pub longitude: f32,
@@ -16,10 +16,10 @@ pub struct OsdmLink {
 
 #[derive(Deserialize, Serialize)]
 pub struct OsdmPlace {
-    pub id: i64,
+    pub id: String,
     pub object_type: String,
     pub alternative_ids: Vec<String>,
-    pub geo_position: OsdmGeoPosition,
+    pub geo_position: Option<OsdmGeoPosition>,
     pub _links: Vec<OsdmLink>,
 }
 

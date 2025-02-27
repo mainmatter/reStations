@@ -21,7 +21,7 @@ pub async fn list(State(app_state): State<SharedAppState>) -> impl IntoResponse 
 
     tokio::task::spawn_blocking(move || {
         let conn = app_state.pool.get().unwrap();
-        db::find_all_stations(&conn, sender);
+        db::stream_all_stations(&conn, sender);
     });
 
     let stations_stream = ReceiverStream::new(receiver).map_err(crate::error::Error::from);
