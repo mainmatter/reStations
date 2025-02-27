@@ -24,12 +24,11 @@ impl IntoResponse for PlacesResponse {
 pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
     let conn = app_state.pool.get().unwrap();
 
-    let stations = db::find_all_stations(&conn).expect("Unexpected error at places::list");
-
-    let mut places: Vec<OsdmPlace> = Vec::with_capacity(stations.len());
-    for station in stations {
-        places.push(station_to_osdm_place(station));
-    }
+    let places = db::find_all_stations(&conn)
+        .expect("Unexpected error at places::list")
+        .into_iter()
+        .map(station_to_osdm_place)
+        .collect();
 
     PlacesResponse::Ok(OsdmPlaceResponse { places })
 }
