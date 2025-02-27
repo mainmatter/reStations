@@ -67,16 +67,13 @@ fn show_found_station(station: StationRecord) -> PlacesShowResponse {
 }
 
 fn station_to_osdm_place(station: StationRecord) -> OsdmPlace {
-    let latitude = station.latitude;
-    let longitude = station.longitude;
-
-    let mut geo_position: Option<OsdmGeoPosition> = None;
-    if latitude.is_some() && longitude.is_some() {
-        geo_position = Some(OsdmGeoPosition {
-            latitude: latitude.unwrap(),
-            longitude: longitude.unwrap(),
-        });
-    }
+    let geo_position = match (station.latitude, station.longitude) {
+        (Some(latitude), Some(longitude)) => Some(OsdmGeoPosition {
+            latitude,
+            longitude,
+        }),
+        _ => None,
+    };
 
     OsdmPlace {
         // TODO: fix uic type at sync stage, like latitude and longitude
