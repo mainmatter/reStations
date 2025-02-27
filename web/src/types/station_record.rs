@@ -186,6 +186,14 @@ impl ProviderId {
             {
                 Ok(None)
             }
+
+            // Other "null" values
+            fn visit_unit<E>(self) -> Result<Self::Value, E>
+            where
+                E: Error,
+            {
+                Ok(None)
+            }
         }
 
         deserializer.deserialize_any(ProviderIdVisitor)
