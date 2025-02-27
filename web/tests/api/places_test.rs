@@ -31,7 +31,7 @@ async fn test_list_ok(context: &TestContext) {
     let response = context.app.request("/places").send().await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json::<OsdmPlaceResponse>().await;
+    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
 
     assert_that!(api_place.places.len(), eq(2));
     let place = &api_place.places[0];
@@ -62,7 +62,7 @@ async fn test_show_ok(context: &TestContext) {
     let response = context.app.request("/places/9430007").send().await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json::<OsdmPlaceResponse>().await;
+    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
 
     assert_that!(api_place.places.len(), eq(1));
     let place = &api_place.places[0];
