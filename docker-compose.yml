@@ -1,0 +1,8 @@
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      APP_ENVIRONMENT: "production"
+      PORT: 3000
