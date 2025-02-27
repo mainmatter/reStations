@@ -33,6 +33,18 @@ pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
     PlacesResponse::Ok(OsdmPlaceResponse { places })
 }
 
+pub async fn post(State(app_state): State<SharedAppState>) -> PlacesResponse {
+    let conn = app_state.pool.get().unwrap();
+
+    let places = db::find_all_stations(&conn)
+        .expect("Unexpected error at places::list")
+        .into_iter()
+        .map(station_to_osdm_place)
+        .collect();
+
+    PlacesResponse::Ok(OsdmPlaceResponse { places })
+}
+
 #[axum::debug_handler]
 pub async fn show(
     State(app_state): State<SharedAppState>,
@@ -41,13 +53,13 @@ pub async fn show(
     let conn = app_state.pool.get().unwrap();
 
     match db::find_station(&conn, &place_id) {
-        Ok(station) => render_show_found_station(station),
-        Err(db::DbError::RecordNotFound(_msg)) => render_show_not_found(place_id),
+        Ok(station) => render_place_response(station),
+        Err(db::DbError::RecordNotFound(_msg)) => render_not_found(place_id),
         _ => todo!("Unexpected error at places::show"),
     }
 }
 
-fn render_show_found_station(station: StationRecord) -> PlacesResponse {
+fn render_place_response(station: StationRecord) -> PlacesResponse {
     let response = OsdmPlaceResponse {
         places: vec![station_to_osdm_place(station)],
     };
@@ -55,7 +67,7 @@ fn render_show_found_station(station: StationRecord) -> PlacesResponse {
     PlacesResponse::Ok(response)
 }
 
-fn render_show_not_found(place_id: String) -> PlacesResponse {
+fn render_not_found(place_id: String) -> PlacesResponse {
     let api_problem = OsdmProblem {
         code: String::from("not-found"),
         title: format!("Could not find place with id #{}", place_id),
