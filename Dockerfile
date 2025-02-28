@@ -14,4 +14,6 @@ RUN apt-get update && apt-get install -y ca-certificates openssl && rm -rf /var/
 COPY --from=builder /usr/src/restations-builder/target/release/restations-web /usr/local/bin/restations-web
 COPY --from=builder /usr/src/restations-builder/scripts/start.sh /usr/local/bin/start.sh
 
-ENTRYPOINT /usr/local/bin/start.sh
+CMD ["/usr/local/bin/restations-web"]
+
+EXPOSE 3000
