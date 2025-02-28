@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-      - 'v*'
-  pull_request: {}
+  pull_request:
 
 jobs:
   fmt:
