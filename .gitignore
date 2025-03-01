@@ -7,3 +7,7 @@
 # Editors
 .idea
 .vscode/
+
+# Data
+stations.csv
+stations.sqlite.db
