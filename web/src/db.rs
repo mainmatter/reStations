@@ -26,8 +26,8 @@ type Sender = mpsc::Sender<Result<StationRecord, DbError>>;
 pub type Connection = rusqlite::Connection;
 pub type Pool = r2d2::Pool<SqliteConnectionManager>;
 
-pub fn create_pool() -> Pool {
-    let manager = SqliteConnectionManager::file("stations.sqlite.db");
+pub fn create_pool(db_file: &str) -> Pool {
+    let manager = SqliteConnectionManager::file(db_file);
     Pool::new(manager).expect("Failed to create pool")
 }
 
