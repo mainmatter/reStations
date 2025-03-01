@@ -27,7 +27,7 @@ pub type Connection = rusqlite::Connection;
 pub type Pool = r2d2::Pool<SqliteConnectionManager>;
 
 pub fn create_pool() -> Pool {
-    let manager = SqliteConnectionManager::memory();
+    let manager = SqliteConnectionManager::file("stations.sqlite.db");
     Pool::new(manager).expect("Failed to create pool")
 }
 

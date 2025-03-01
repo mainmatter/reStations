@@ -42,8 +42,6 @@ pub async fn run() -> anyhow::Result<()> {
 
     let app_state = state::init_app_state(config.clone()).await;
 
-    sync(app_state.pool.clone()).await?;
-
     let app = routes::init_routes(app_state);
 
     let addr = config.server.addr();
