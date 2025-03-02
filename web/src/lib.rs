@@ -45,11 +45,7 @@ pub async fn run() -> anyhow::Result<()> {
     let env = get_env().context("Cannot get environment!")?;
     let config: Config = load_config(&env).context("Cannot load config!")?;
 
-    let app_state = if let Ok(state) = state::init_app_state(config.clone()).await {
-        state
-    } else {
-        return Err(anyhow::anyhow!("Failed to initialize app state"));
-    };
+    let app_state = state::init_app_state(config.clone()).await;
 
     sync(app_state.pool.clone()).await?;
 
