@@ -52,7 +52,7 @@ pub fn find_station(db: &Connection, place_id: &String) -> Result<StationRecord,
 
 pub fn find_all_stations(db: &Connection) -> Result<Vec<StationRecord>, DbError> {
     let mut stmt = db
-        .prepare("SELECT * from stations WHERE uic IS NOT NULL AND uic != ''")
+        .prepare("SELECT * from stations WHERE uic IS NOT NULL")
         .unwrap();
 
     let columns = columns_from_statement(&stmt);
@@ -70,7 +70,9 @@ pub fn find_all_stations(db: &Connection) -> Result<Vec<StationRecord>, DbError>
 }
 
 pub fn stream_all_stations(db: &Connection, sender: Sender) {
-    let mut stmt = db.prepare("SELECT * from stations").unwrap();
+    let mut stmt = db
+        .prepare("SELECT * from stations WHERE uic IS NOT NULL")
+        .unwrap();
 
     let columns = columns_from_statement(&stmt);
     let stations = stmt
