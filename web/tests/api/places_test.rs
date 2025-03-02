@@ -10,7 +10,7 @@ use restations_web::types::station_record::StationRecord;
 #[test]
 async fn test_list_ok(context: &TestContext) {
     let dbconn = context.pool.get().unwrap();
-    let _ = db::create_tables(&dbconn).expect("Could not create DB tables");
+    db::create_tables(&dbconn).expect("Could not create DB tables");
     // Lisbon Santa Apolónia
     let station1 = StationRecord {
         uic: String::from("9430007"),
@@ -49,7 +49,7 @@ async fn test_list_ok(context: &TestContext) {
 #[test]
 async fn test_show_ok(context: &TestContext) {
     let dbconn = context.pool.get().unwrap();
-    let _ = db::create_tables(&dbconn).expect("Could not create DB tables");
+    db::create_tables(&dbconn).expect("Could not create DB tables");
     // Lisbon Santa Apolónia
     let test_station = StationRecord {
         uic: String::from("9430007"),
@@ -80,7 +80,7 @@ async fn test_show_ok(context: &TestContext) {
 #[test]
 async fn test_show_not_found(context: &TestContext) {
     let dbconn = context.pool.get().unwrap();
-    let _ = db::create_tables(&dbconn).expect("Could not create DB tables");
+    db::create_tables(&dbconn).expect("Could not create DB tables");
 
     let response = context.app.request("/places/1").send().await;
     assert_that!(response.status(), eq(404));
