@@ -1,6 +1,9 @@
 use crate::controllers::places;
 use crate::state::AppState;
-use axum::{routing::get, Router};
+use axum::{
+    routing::{get, post},
+    Router,
+};
 use std::sync::Arc;
 
 /// Initializes the application's routes.
@@ -11,6 +14,7 @@ pub fn init_routes(app_state: AppState) -> Router {
 
     Router::new()
         .route("/places", get(places::list))
+        .route("/places", post(places::post))
         .route("/places/{id}", get(places::show))
         .with_state(shared_app_state)
 }

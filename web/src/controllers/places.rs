@@ -5,6 +5,7 @@ use crate::types::station_record::StationRecord;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
+use serde::{Deserialize, Serialize};
 
 pub enum PlacesResponse {
     Ok(OsdmPlaceResponse),
@@ -33,10 +34,23 @@ pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
     PlacesResponse::Ok(OsdmPlaceResponse { places })
 }
 
-pub async fn post(State(app_state): State<SharedAppState>) -> PlacesResponse {
+#[derive(Deserialize, Serialize)]
+pub struct SearchPlaceInput {
+    pub name: String,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct SearchInput {
+    pub place_input: SearchPlaceInput,
+}
+
+pub async fn post(
+    State(app_state): State<SharedAppState>,
+    Json(search_input): Json<SearchInput>,
+) -> PlacesResponse {
     let conn = app_state.pool.get().unwrap();
 
-    let places = db::find_all_stations(&conn)
+    let places = db::search_all_stations(&conn, &search_input.place_input.name)
         .expect("Unexpected error at places::list")
         .into_iter()
         .map(station_to_osdm_place)
