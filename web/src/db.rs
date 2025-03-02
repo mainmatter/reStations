@@ -1,5 +1,4 @@
 use super::types::station_record::StationRecord;
-
 use r2d2_sqlite::SqliteConnectionManager;
 use serde_rusqlite::{columns_from_statement, from_row_with_columns};
 use tokio::sync::mpsc;
