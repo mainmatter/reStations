@@ -1,21 +1,21 @@
 //! The restations_web crate contains the application's web interface which mainly are controllers implementing HTTP endpoints. It also includes the application tests that are black-box tests, interfacing with the application like any other HTTP client.
-use std::sync::Arc;
 use anyhow::Context;
 use axum::serve;
 use error::Error;
+use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use restations_config::{get_env, load_config, Config};
+use std::sync::Arc;
 use tokio::{net::TcpListener, sync::mpsc};
+use tokio_util::{io::StreamReader, sync::PollSender};
 use tracing::{info, instrument};
 use tracing_panic::panic_hook;
 use tracing_subscriber::{filter::EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 use types::station_record::StationRecord;
-use futures_util::{SinkExt, StreamExt, TryStreamExt};
-use tokio_util::{io::StreamReader, sync::PollSender};
 
-/// DB access code e.g. for loading records
-pub mod db;
 /// The application's controllers that implement request handlers.
 pub mod controllers;
+/// DB access code e.g. for loading records
+pub mod db;
 /// Contains the application's error type and related conversion implementation.
 pub mod error;
 /// Middlewares that incoming requests are passed through before being passed to [`controllers`].
