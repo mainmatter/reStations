@@ -53,3 +53,8 @@ Build the project's documentation with:
 ```
 cargo doc --workspace --all-features
 ```
+
+# License
+
+Copyright © 2025- Mainmatter GmbH (https://mainmatter.com), released under the
+[MIT](./LICENSE-MIT) and [Apache](./LICENSE-APACHE) licenses.
