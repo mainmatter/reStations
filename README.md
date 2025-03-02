@@ -58,3 +58,5 @@ cargo doc --workspace --all-features
 
 Copyright © 2025- Mainmatter GmbH (https://mainmatter.com), released under the
 [MIT](./LICENSE-MIT) and [Apache](./LICENSE-APACHE) licenses.
+
+[Trainline EU's stations dataset](https://github.com/trainline-eu/stations) is released under the [Open Data Commons Open Database License v1.0 license](https://github.com/trainline-eu/stations/blob/master/LICENCE.txt) which allows private and commercial use.
