@@ -14,7 +14,7 @@ pub fn init_routes(app_state: AppState) -> Router {
 
     Router::new()
         .route("/places", get(places::list))
-        .route("/places", post(places::post))
+        .route("/places", post(places::search))
         .route("/places/{id}", get(places::show))
         .with_state(shared_app_state)
 }

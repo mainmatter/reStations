@@ -44,14 +44,14 @@ pub struct SearchInput {
     pub place_input: SearchPlaceInput,
 }
 
-pub async fn post(
+pub async fn search(
     State(app_state): State<SharedAppState>,
     Json(search_input): Json<SearchInput>,
 ) -> PlacesResponse {
     let conn = app_state.pool.get().unwrap();
 
     let places = db::search_all_stations(&conn, &search_input.place_input.name)
-        .expect("Unexpected error at places::list")
+        .expect("Unexpected error at places::search")
         .into_iter()
         .map(station_to_osdm_place)
         .collect();
