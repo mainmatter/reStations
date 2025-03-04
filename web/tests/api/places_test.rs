@@ -65,17 +65,6 @@ async fn test_search_other_languages(context: &TestContext) {
 
 #[test]
 async fn test_search_unknown_parameters(context: &TestContext) {
-    let dbconn = context.pool.get().unwrap();
-    let _ = db::create_tables(&dbconn).expect("Could not create DB tables");
-    let station1 = StationRecord {
-        name: String::from("Lisbon Santa Apolónia"),
-        uic: String::from("9430007"),
-        latitude: Some(38.71387),
-        longitude: Some(-9.122271),
-        ..Default::default()
-    };
-    let _ = db::insert_station(&dbconn, &station1).expect("Could not insert station in DB");
-
     let payload = r#"
         {
             "place_input": {
@@ -98,7 +87,7 @@ async fn test_search_unknown_parameters(context: &TestContext) {
 
     let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), eq(1));
+    assert_that!(api_place.places.len(), eq(2));
     let place = &api_place.places[0];
     assert_that!(place.id, eq("9430007"));
     assert_that!(place.object_type, eq("StopPlace"));
@@ -110,7 +99,6 @@ async fn test_search_unknown_parameters(context: &TestContext) {
         })
     );
 }
-
 
 #[test]
 async fn test_show_ok(context: &TestContext) {
