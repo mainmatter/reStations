@@ -18,7 +18,7 @@ async fn test_list_empty(context: &TestContext) {
 #[test]
 async fn test_list_single_record(context: &TestContext) {
     let dbconn = context.pool.get().unwrap();
-    let _ = db::create_tables(&dbconn).expect("Could not create DB tables");
+    db::create_tables(&dbconn).expect("Could not create DB tables");
     let test_station = StationRecord {
         id: 1,
         name: String::from("Test Station"),
