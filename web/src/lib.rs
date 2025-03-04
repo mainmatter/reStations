@@ -1,16 +1,11 @@
 //! The restations_web crate contains the application's web interface which mainly are controllers implementing HTTP endpoints. It also includes the application tests that are black-box tests, interfacing with the application like any other HTTP client.
 use anyhow::Context;
 use axum::serve;
-use error::Error;
-use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use restations_config::{get_env, load_config, Config};
-use std::sync::Arc;
-use tokio::{net::TcpListener, sync::mpsc};
-use tokio_util::{io::StreamReader, sync::PollSender};
-use tracing::{info, instrument};
+use tokio::net::TcpListener;
+use tracing::info;
 use tracing_panic::panic_hook;
 use tracing_subscriber::{filter::EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
-use types::station_record::StationRecord;
 
 /// The application's controllers that implement request handlers.
 pub mod controllers;
@@ -41,8 +36,6 @@ pub async fn run() -> anyhow::Result<()> {
     let config: Config = load_config(&env).context("Cannot load config!")?;
 
     let app_state = state::init_app_state(config.clone()).await;
-
-    sync(app_state.pool.clone()).await?;
 
     let app = routes::init_routes(app_state);
 
@@ -83,61 +76,3 @@ pub fn init_tracing() {
 /// Helpers that simplify writing application tests.
 #[cfg(feature = "test-helpers")]
 pub mod test_helpers;
-
-/// TODO move this function somewhere else
-/// TODO don't take ownership
-#[instrument(skip_all)]
-async fn sync(pool: Arc<db::Pool>) -> Result<(), Error> {
-    // A channel for sending the records to the database worker thread
-    let (tx, mut rx) = mpsc::channel::<StationRecord>(32);
-
-    // Spawn worker thread for the blocking database operations
-    let db_task = tokio::task::spawn_blocking(move || {
-        let conn = pool.get().unwrap();
-        // Refresh the table
-        db::create_tables(&conn)?;
-
-        // 4. Insert records in database
-        while let Some(record) = rx.blocking_recv() {
-            db::insert_station(&conn, &record)?;
-        }
-        Ok(())
-    });
-
-    let csv_stream = acquire_csv_stream().await?;
-
-    // 2. Pipe the data into https://github.com/gwierzchowski/csv-async, and deserialize to [`stations_core::data::StationRecord`]
-    let mut deserializer = csv_async::AsyncReaderBuilder::new()
-        .has_headers(true)
-        .delimiter(b';')
-        .create_deserializer(csv_stream);
-
-    let records = deserializer
-        .deserialize::<StationRecord>()
-        .map_err(Error::from);
-
-    // 3. Send the deserialized data to the database task
-    // Wrap the Sender in a PollSender, which implements Sink, allowing us to
-    // forward the records to it.
-    let tx =
-        PollSender::new(tx).sink_map_err(|_| panic!("Error sending StationRecord to channel."));
-    records.forward(tx).await?;
-
-    // Wait for the database task to finish
-    db_task.await.unwrap()
-}
-
-async fn acquire_csv_stream() -> Result<impl tokio::io::AsyncRead + Unpin + Send, Error> {
-    // 1. streamingly fetch csv from https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv
-    // Get the response bytes as stream (https://docs.rs/futures/latest/futures/prelude/trait.Stream.html)
-    let stream = reqwest::get(
-        "https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv",
-    )
-    .await?
-    .bytes_stream()
-    // map items from a Result<Bytes, reqwest::Error> to Result<Bytes, tokio::io::Error>,
-    // in order for the stream to be wrapped in a StreamReader
-    .map(|r| r.map_err(tokio::io::Error::other));
-    // Wrap the stream in a StreamReader, which implements AsyncRead, the trait csv-async is built around
-    Ok(Box::new(StreamReader::new(stream)))
-}

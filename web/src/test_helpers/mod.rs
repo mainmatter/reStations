@@ -195,7 +195,7 @@ pub async fn setup() -> TestContext {
     let init_config: OnceCell<Config> = OnceCell::new();
     let _config = init_config.get_or_init(|| load_config(&Environment::Test).unwrap());
 
-    let pool = Arc::new(db::create_pool());
+    let pool = Arc::new(db::create_pool("../stations.sqlite.db"));
     let app = init_routes(AppState { pool: pool.clone() });
 
     TestContext { app, pool }

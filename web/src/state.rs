@@ -18,7 +18,7 @@ pub type SharedAppState = Arc<AppState>;
 ///
 /// This function creates an [`AppState`] based on the current [`restations_config::Config`].
 pub async fn init_app_state(_config: Config) -> AppState {
-    let pool = db::create_pool();
+    let pool = db::create_pool("stations.sqlite.db");
 
     AppState {
         pool: Arc::new(pool),
