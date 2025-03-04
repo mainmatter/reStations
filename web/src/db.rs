@@ -71,7 +71,7 @@ pub fn find_all_stations(db: &Connection) -> Result<Vec<StationRecord>, DbError>
 
 pub fn search_all_stations(db: &Connection, name: &str) -> Result<Vec<StationRecord>, DbError> {
     let pattern = format!("%{}%", name);
-    let mut stmt = db.prepare("SELECT * from stations  WHERE uic IS NOT NULL AND uic != '' AND (name like ?1 OR info_de like ?1 OR info_en like ?1 OR info_es like ?1) OR info_fr like ?1 OR info_it like ?1 OR info_nb like ?1 OR info_nl like ?1 OR info_cs like ?1 OR info_da like ?1 OR info_hu like ?1 OR info_ja like ?1 OR info_ko like ?1 OR info_pl like ?1 OR info_pt like ?1 OR info_ru like ?1 OR info_sv like ?1 OR info_tr like ?1 OR info_zh like ?1")?;
+    let mut stmt = db.prepare("SELECT * from stations  WHERE uic IS NOT NULL AND uic != '' AND (name like ?1 OR info_de like ?1 OR info_en like ?1 OR info_es like ?1 OR info_fr like ?1 OR info_it like ?1 OR info_nb like ?1 OR info_nl like ?1 OR info_cs like ?1 OR info_da like ?1 OR info_hu like ?1 OR info_ja like ?1 OR info_ko like ?1 OR info_pl like ?1 OR info_pt like ?1 OR info_ru like ?1 OR info_sv like ?1 OR info_tr like ?1 OR info_zh like ?1)")?;
 
     let columns = columns_from_statement(&stmt);
     let rows = stmt
