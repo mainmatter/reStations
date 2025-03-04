@@ -39,6 +39,7 @@ pub struct OsdmInitialPlaceInput {
 }
 
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OsdmPlaceRequest {
     pub place_input: Option<OsdmInitialPlaceInput>,
 }

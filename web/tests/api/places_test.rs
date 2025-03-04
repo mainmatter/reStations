@@ -66,7 +66,7 @@ async fn test_search_other_languages(context: &TestContext) {
 async fn test_search_unknown_parameters(context: &TestContext) {
     let payload = r#"
         {
-            "place_input": {
+            "placeInput": {
                 "name": "Lisbon"
             },
             "unknown": {
