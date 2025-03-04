@@ -62,11 +62,8 @@ pub fn find_all_stations(db: &Connection) -> Result<Vec<StationRecord>, DbError>
         })
         .unwrap();
 
-    let mut result: Vec<StationRecord> = Vec::new();
-    for row in rows {
-        result.push(row.unwrap());
-    }
-    Ok(result)
+    let records = rows.into_iter().map(|row| row.unwrap()).collect();
+    Ok(records)
 }
 
 pub fn search_all_stations(db: &Connection, name: &str) -> Result<Vec<StationRecord>, DbError> {
@@ -80,11 +77,8 @@ pub fn search_all_stations(db: &Connection, name: &str) -> Result<Vec<StationRec
         })
         .unwrap();
 
-    let mut result: Vec<StationRecord> = Vec::new();
-    for row in rows {
-        result.push(row.unwrap());
-    }
-    Ok(result)
+    let records = rows.into_iter().map(|row| row.unwrap()).collect();
+    Ok(records)
 }
 
 pub fn stream_all_stations(db: &Connection, sender: Sender) {
