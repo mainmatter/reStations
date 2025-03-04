@@ -39,7 +39,16 @@ pub async fn search(
 ) -> PlacesResponse {
     let conn = app_state.pool.get().unwrap();
 
-    let places = db::search_all_stations(&conn, &search_input.place_input.name)
+    let maybe_place_name = match &search_input.place_input {
+        Some(value) => value.name.clone(),
+        None => None,
+    };
+    let query = match maybe_place_name {
+        Some(name) => db::search_all_stations(&conn, &name),
+        None => db::find_all_stations(&conn),
+    };
+
+    let places = query
         .expect("Unexpected error at places::search")
         .into_iter()
         .map(station_to_osdm_place)

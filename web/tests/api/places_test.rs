@@ -21,9 +21,9 @@ async fn test_list_ok(context: &TestContext) {
 #[test]
 async fn test_search_ok(context: &TestContext) {
     let payload = json!(OsdmPlaceRequest {
-        place_input: OsdmInitialPlaceInput {
-            name: String::from("Berlin")
-        }
+        place_input: Some(OsdmInitialPlaceInput {
+            name: Some(String::from("Berlin")),
+        }),
     });
     let response = context
         .app
@@ -43,9 +43,9 @@ async fn test_search_ok(context: &TestContext) {
 #[test]
 async fn test_search_other_languages(context: &TestContext) {
     let payload = json!(OsdmPlaceRequest {
-        place_input: OsdmInitialPlaceInput {
-            name: String::from("Seville")
-        }
+        place_input: Some(OsdmInitialPlaceInput {
+            name: Some(String::from("Seville")),
+        })
     });
     let response = context
         .app
@@ -97,6 +97,30 @@ async fn test_search_unknown_parameters(context: &TestContext) {
             longitude: -9.122271
         })
     );
+}
+
+#[test]
+async fn test_search_missing_parameters(context: &TestContext) {
+    let payload = r#"
+        {
+            "unknown": {
+                "parameter": "here"
+            }
+        }
+    "#;
+    let response = context
+        .app
+        .request("/places")
+        .method(Method::POST)
+        .body(Body::from(payload.to_string()))
+        .header(http::header::CONTENT_TYPE, "application/json")
+        .send()
+        .await;
+    assert_that!(response.status(), eq(200));
+
+    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+
+    assert_that!(api_place.places.len(), gt(1000));
 }
 
 #[test]

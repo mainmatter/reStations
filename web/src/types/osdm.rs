@@ -35,12 +35,12 @@ pub struct OsdmPlace {
 
 #[derive(Deserialize, Serialize)]
 pub struct OsdmInitialPlaceInput {
-    pub name: String,
+    pub name: Option<String>,
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct OsdmPlaceRequest {
-    pub place_input: OsdmInitialPlaceInput,
+    pub place_input: Option<OsdmInitialPlaceInput>,
 }
 
 
