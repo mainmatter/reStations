@@ -28,7 +28,6 @@ pub struct OsdmPlace {
     pub _links: Vec<OsdmLink>,
 }
 
-
 //
 // Requests
 //
@@ -43,7 +42,6 @@ pub struct OsdmInitialPlaceInput {
 pub struct OsdmPlaceRequest {
     pub place_input: Option<OsdmInitialPlaceInput>,
 }
-
 
 //
 // Responses
