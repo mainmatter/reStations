@@ -42,6 +42,28 @@ async fn test_search_ok(context: &TestContext) {
 }
 
 #[test]
+async fn test_search_other_languages(context: &TestContext) {
+    let payload = json!(SearchInput {
+        place_input: SearchPlaceInput {
+            name: String::from("Seville")
+        }
+    });
+    let response = context
+        .app
+        .request("/places")
+        .method(Method::POST)
+        .body(Body::from(payload.to_string()))
+        .header(http::header::CONTENT_TYPE, "application/json")
+        .send()
+        .await;
+    assert_that!(response.status(), eq(200));
+
+    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+
+    assert_that!(api_place.places.len(), gt(1));
+}
+
+#[test]
 async fn test_show_ok(context: &TestContext) {
     let response = context.app.request("/places/9430007").send().await;
     assert_that!(response.status(), eq(200));
