@@ -35,12 +35,12 @@ pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
 
 pub async fn search(
     State(app_state): State<SharedAppState>,
-    Json(search_input): Json<OsdmPlaceRequest>,
+    Json(place_req): Json<OsdmPlaceRequest>,
 ) -> PlacesResponse {
     let conn = app_state.pool.get().unwrap();
 
-    let maybe_place_name = match &search_input.place_input {
-        Some(value) => value.name.clone(),
+    let maybe_place_name = match place_req.place_input {
+        Some(value) => value.name,
         None => None,
     };
     let query = match maybe_place_name {
