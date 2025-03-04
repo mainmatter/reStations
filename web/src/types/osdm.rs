@@ -15,6 +15,7 @@ pub struct OsdmLink {
 }
 
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OsdmPlace {
     pub id: String,
     pub object_type: String,

@@ -1,0 +1,128 @@
+wget https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv -O stations.csv
+
+sqlite3 stations.sqlite.db << EOF
+-- 1. drop and recreate table
+DROP TABLE IF EXISTS stations;
+CREATE TABLE stations (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    slug TEXT,
+    uic TEXT,
+    uic8_sncf TEXT,
+    latitude REAL,
+    longitude REAL,
+    parent_station_id TEXT,
+    country TEXT,
+    time_zone TEXT,
+    is_city INTEGER,
+    is_main_station INTEGER,
+    is_airport INTEGER,
+    is_suggestable INTEGER,
+    country_hint INTEGER,
+    main_station_hint INTEGER,
+    sncf_id TEXT,
+    sncf_tvs_id TEXT,
+    sncf_is_enabled INTEGER,
+    entur_id TEXT,
+    entur_is_enabled INTEGER,
+    db_id TEXT,
+    db_is_enabled INTEGER,
+    busbud_id TEXT,
+    busbud_is_enabled INTEGER,
+    distribusion_id TEXT,
+    distribusion_is_enabled INTEGER,
+    flixbus_id TEXT,
+    flixbus_is_enabled INTEGER,
+    cff_id TEXT,
+    cff_is_enabled INTEGER,
+    leoexpress_id TEXT,
+    leoexpress_is_enabled INTEGER,
+    obb_id TEXT,
+    obb_is_enabled INTEGER,
+    ouigo_id TEXT,
+    ouigo_is_enabled INTEGER,
+    trenitalia_id TEXT,
+    trenitalia_is_enabled INTEGER,
+    trenitalia_rtvt_id TEXT,
+    trenord_id TEXT,
+    ntv_rtiv_id TEXT,
+    ntv_id TEXT,
+    ntv_is_enabled INTEGER,
+    hkx_id TEXT,
+    hkx_is_enabled INTEGER,
+    renfe_id TEXT,
+    renfe_is_enabled INTEGER,
+    atoc_id TEXT,
+    atoc_is_enabled INTEGER,
+    benerail_id TEXT,
+    benerail_is_enabled INTEGER,
+    westbahn_id TEXT,
+    westbahn_is_enabled INTEGER,
+    sncf_self_service_machine TEXT,
+    same_as TEXT,
+    info_de TEXT,
+    info_en TEXT,
+    info_es TEXT,
+    info_fr TEXT,
+    info_it TEXT,
+    info_nb TEXT,
+    info_nl TEXT,
+    info_cs TEXT,
+    info_da TEXT,
+    info_hu TEXT,
+    info_ja TEXT,
+    info_ko TEXT,
+    info_pl TEXT,
+    info_pt TEXT,
+    info_ru TEXT,
+    info_sv TEXT,
+    info_tr TEXT,
+    info_zh TEXT,
+    normalised_code TEXT,
+    iata_airport_code TEXT
+);
+
+-- 2. import data from CSV
+.mode csv
+.separator ";"
+.import --skip 1 stations.csv stations
+
+-- 3. set NULL values (we can' differentiate between empty string and NULL when importing the CSV so this needs to be done manually)
+UPDATE stations SET latitude = null WHERE latitude = "";
+UPDATE stations SET longitude = null WHERE longitude = "";
+UPDATE stations SET sncf_id = null WHERE sncf_id = "";
+UPDATE stations SET entur_id = null WHERE entur_id = "";
+UPDATE stations SET db_id = null WHERE db_id = "";
+UPDATE stations SET busbud_id = null WHERE busbud_id = "";
+UPDATE stations SET distribusion_id = null WHERE distribusion_id = "";
+UPDATE stations SET flixbus_id = null WHERE flixbus_id = "";
+UPDATE stations SET cff_id = null WHERE cff_id = "";
+UPDATE stations SET leoexpress_id = null WHERE leoexpress_id = "";
+UPDATE stations SET obb_id = null WHERE obb_id = "";
+UPDATE stations SET ouigo_id = null WHERE ouigo_id = "";
+UPDATE stations SET trenitalia_id = null WHERE trenitalia_id = "";
+UPDATE stations SET ntv_id = null WHERE ntv_id = "";
+UPDATE stations SET hkx_id = null WHERE hkx_id = "";
+UPDATE stations SET renfe_id = null WHERE renfe_id = "";
+UPDATE stations SET atoc_id = null WHERE atoc_id = "";
+UPDATE stations SET benerail_id = null WHERE benerail_id = "";
+UPDATE stations SET westbahn_id = null WHERE westbahn_id = "";
+UPDATE stations SET info_de = null WHERE info_de = "";
+UPDATE stations SET info_en = null WHERE info_en = "";
+UPDATE stations SET info_es = null WHERE info_es = "";
+UPDATE stations SET info_fr = null WHERE info_fr = "";
+UPDATE stations SET info_it = null WHERE info_it = "";
+UPDATE stations SET info_nb = null WHERE info_nb = "";
+UPDATE stations SET info_nl = null WHERE info_nl = "";
+UPDATE stations SET info_cs = null WHERE info_cs = "";
+UPDATE stations SET info_da = null WHERE info_da = "";
+UPDATE stations SET info_hu = null WHERE info_hu = "";
+UPDATE stations SET info_ja = null WHERE info_ja = "";
+UPDATE stations SET info_ko = null WHERE info_ko = "";
+UPDATE stations SET info_pl = null WHERE info_pl = "";
+UPDATE stations SET info_pt = null WHERE info_pt = "";
+UPDATE stations SET info_ru = null WHERE info_ru = "";
+UPDATE stations SET info_sv = null WHERE info_sv = "";
+UPDATE stations SET info_tr = null WHERE info_tr = "";
+UPDATE stations SET info_zh = null WHERE info_zh = "";
+EOF

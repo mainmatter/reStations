@@ -1,5 +1,5 @@
-# Taken from https://github.com/mainmatter/eserde/blob/main/.github/workflows/general.yml
 name: CI
+
 on:
   push:
     branches:
@@ -7,24 +7,39 @@ on:
   pull_request:
 
 jobs:
-  fmt:
-    name: Format
+  rustfmt:
+    name: "Rust Format"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          components: rustfmt
-      - name: Enforce formatting
-        run: ./scripts/format
+    - uses: actions/checkout@v4
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        components: rustfmt
 
-  lint:
-    name: Lint
+    - name: fmt
+      run: cargo fmt --all --check
+
+  clippy:
+    name: "Clippy"
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          components: clippy
-      - name: Linting
-        run: ./scripts/lint
+    - uses: actions/checkout@v4
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        components: clippy
+    
+    - name: clippy
+      run: cargo clippy --all-targets -- -D warnings
+
+  test:
+    name: "Test"
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+    - run: ./scripts/sync-data    
+    - name: test
+      run: cargo test
