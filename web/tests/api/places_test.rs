@@ -64,6 +64,55 @@ async fn test_search_other_languages(context: &TestContext) {
 }
 
 #[test]
+async fn test_search_unknown_parameters(context: &TestContext) {
+    let dbconn = context.pool.get().unwrap();
+    let _ = db::create_tables(&dbconn).expect("Could not create DB tables");
+    let station1 = StationRecord {
+        name: String::from("Lisbon Santa Apolónia"),
+        uic: String::from("9430007"),
+        latitude: Some(38.71387),
+        longitude: Some(-9.122271),
+        ..Default::default()
+    };
+    let _ = db::insert_station(&dbconn, &station1).expect("Could not insert station in DB");
+
+    let payload = r#"
+        {
+            "place_input": {
+                "name": "Lisbon"
+            },
+            "unknown": {
+                "parameter": "here"
+            }
+        }
+    "#;
+    let response = context
+        .app
+        .request("/places")
+        .method(Method::POST)
+        .body(Body::from(payload.to_string()))
+        .header(http::header::CONTENT_TYPE, "application/json")
+        .send()
+        .await;
+    assert_that!(response.status(), eq(200));
+
+    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+
+    assert_that!(api_place.places.len(), eq(1));
+    let place = &api_place.places[0];
+    assert_that!(place.id, eq("9430007"));
+    assert_that!(place.object_type, eq("StopPlace"));
+    assert_that!(
+        place.geo_position.as_ref().unwrap(),
+        eq(&OsdmGeoPosition {
+            latitude: 38.71387,
+            longitude: -9.122271
+        })
+    );
+}
+
+
+#[test]
 async fn test_show_ok(context: &TestContext) {
     let response = context.app.request("/places/9430007").send().await;
     assert_that!(response.status(), eq(200));
