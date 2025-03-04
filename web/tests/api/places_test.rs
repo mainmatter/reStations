@@ -4,7 +4,6 @@ use axum::{
 };
 use googletest::prelude::{assert_that, eq, gt};
 use restations_macros::test;
-use restations_web::controllers::places::{SearchInput, SearchPlaceInput};
 use restations_web::test_helpers::{BodyExt, RouterExt, TestContext};
 use restations_web::types::osdm::*;
 use serde_json::json;
@@ -21,8 +20,8 @@ async fn test_list_ok(context: &TestContext) {
 
 #[test]
 async fn test_search_ok(context: &TestContext) {
-    let payload = json!(SearchInput {
-        place_input: SearchPlaceInput {
+    let payload = json!(OsdmPlaceRequest {
+        place_input: OsdmInitialPlaceInput {
             name: String::from("Berlin")
         }
     });
@@ -43,8 +42,8 @@ async fn test_search_ok(context: &TestContext) {
 
 #[test]
 async fn test_search_other_languages(context: &TestContext) {
-    let payload = json!(SearchInput {
-        place_input: SearchPlaceInput {
+    let payload = json!(OsdmPlaceRequest {
+        place_input: OsdmInitialPlaceInput {
             name: String::from("Seville")
         }
     });
