@@ -13,8 +13,7 @@ RUN rustup toolchain install
 RUN rustup target add x86_64-unknown-linux-gnu
 RUN cargo build --bin restations-web --release
 
-FROM debian:bookworm-slim AS runtime
-RUN apt-get update && apt-get install -y ca-certificates openssl && rm -rf /var/lib/apt/lists/*
+FROM rust:1.85 AS runtime
 
 COPY --from=builder /usr/src/restations-builder/target/release/restations-web /usr/local/bin/restations-web
 COPY ./stations.sqlite.db .
