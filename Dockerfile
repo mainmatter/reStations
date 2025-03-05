@@ -19,7 +19,7 @@ COPY --from=builder /usr/src/restations-builder/target/release/restations-web /u
 COPY ./stations.sqlite.db .
 
 ENV APP_ENVIRONMENT=production
-ENV APP_SERVER__PORT=8888
+ENV APP_SERVER__PORT=3000
 ENV APP_SERVER__IP="0.0.0.0"
 ENTRYPOINT ["/usr/local/bin/restations-web"]
-EXPOSE 8888
+EXPOSE 3000
