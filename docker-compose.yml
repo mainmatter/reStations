@@ -4,5 +4,6 @@ services:
     ports:
       - "3000:3000"
     environment:
+      APP_SERVER__IP: "0.0.0.0"
       APP_ENVIRONMENT: "production"
       PORT: 3000
