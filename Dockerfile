@@ -1,15 +1,25 @@
-# Heroku doesn't have a great support for rust, their buildpacks are pretty stale and hard to use.
-# Instead of using buildpacks, we're using container environment for building and running the application.
-# This builds a server binary and copies a start.sh script.
+FROM rust:1.85 AS builder
 
-FROM rust:1.85 as builder
 WORKDIR /usr/src/restations-builder
-COPY . .
+COPY ./Cargo.lock .
+COPY ./Cargo.toml .
+COPY ./cli ./cli
+COPY ./config ./config
+COPY ./macros ./macros
+COPY ./rust-toolchain.toml .
+COPY ./web ./web
 
+RUN rustup toolchain install 1.85-x86_64-unknown-linux-gnu
 RUN cargo build --bin restations-web --release
 
-FROM debian:bookworm-slim as runtime
+FROM debian:bookworm-slim AS runtime
 RUN apt-get update && apt-get install -y ca-certificates openssl && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/src/restations-builder/target/release/restations-web /usr/local/bin/restations-web
-COPY --from=builder /usr/src/restations-builder/scripts/start.sh /usr/local/bin/start.sh
+COPY ./stations.sqlite.db .
+
+ENV APP_ENVIRONMENT=production
+ENV APP_SERVER__PORT=3000
+ENV APP_SERVER__IP="0.0.0.0"
+ENTRYPOINT ["/usr/local/bin/restations-web"]
+EXPOSE 3000
