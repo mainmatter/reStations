@@ -19,7 +19,6 @@ RUN adduser \
   "restations"
 
 RUN rustup toolchain install
-RUN rustup target add x86_64-unknown-linux-gnu
 RUN cargo build --bin restations-web --release
 
 FROM rust:1.85-slim AS runtime
