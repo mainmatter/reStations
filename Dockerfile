@@ -2,13 +2,13 @@
 # Instead of using buildpacks, we're using container environment for building and running the application.
 # This builds a server binary and copies a start.sh script.
 
-FROM rust:1.85 as builder
+FROM rust:1.85 AS builder
 WORKDIR /usr/src/restations-builder
 COPY . .
 
 RUN cargo build --bin restations-web --release
 
-FROM debian:bookworm-slim as runtime
+FROM debian:bookworm-slim AS runtime
 RUN apt-get update && apt-get install -y ca-certificates openssl && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/src/restations-builder/target/release/restations-web /usr/local/bin/restations-web
