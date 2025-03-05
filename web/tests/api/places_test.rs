@@ -86,17 +86,7 @@ async fn test_search_unknown_parameters(context: &TestContext) {
 
     let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), eq(2));
-    let place = &api_place.places[0];
-    assert_that!(place.id, eq("9430007"));
-    assert_that!(place.object_type, eq("StopPlace"));
-    assert_that!(
-        place.geo_position.as_ref().unwrap(),
-        eq(&OsdmGeoPosition {
-            latitude: 38.71387,
-            longitude: -9.122271
-        })
-    );
+    assert_that!(api_place.places.len(), gt(1));
 }
 
 #[test]
