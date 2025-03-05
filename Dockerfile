@@ -9,15 +9,26 @@ COPY ./macros ./macros
 COPY ./rust-toolchain.toml .
 COPY ./web ./web
 
+RUN adduser \
+  --disabled-password \
+  --gecos "" \
+  --home "/nonexistent" \
+  --shell "/sbin/nologin" \
+  --no-create-home \
+  --uid 10001 \
+  "restations"
+
 RUN rustup toolchain install
-RUN rustup target add x86_64-unknown-linux-gnu
 RUN cargo build --bin restations-web --release
 
-FROM debian:bookworm-slim AS runtime
-RUN apt-get update && apt-get install -y ca-certificates openssl && rm -rf /var/lib/apt/lists/*
+FROM rust:1.85-slim AS runtime
 
-COPY --from=builder /usr/src/restations-builder/target/release/restations-web /usr/local/bin/restations-web
-COPY ./stations.sqlite.db .
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+USER restations:restations
+
+COPY --from=builder --chown=restations:restations /usr/src/restations-builder/target/release/restations-web /usr/local/bin/restations-web
+COPY --chown=restations:restations ./stations.sqlite.db .
 
 ENV APP_ENVIRONMENT=production
 ENV APP_SERVER__PORT=3000
