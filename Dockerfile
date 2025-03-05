@@ -20,5 +20,5 @@ COPY --from=builder /usr/src/restations-builder/target/release/restations-web /u
 ENV APP_ENVIRONMENT=production
 ENV APP_SERVER__PORT=8888
 ENV APP_SERVER__IP="0.0.0.0"
-EXPOSE 8888 8888
 ENTRYPOINT ["/usr/local/bin/restations-web"]
+EXPOSE 8888
