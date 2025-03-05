@@ -2,10 +2,11 @@
 
 This is an implementation of the [OSDM API spec](https://osdm.io)'s [Places endpoint](https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/UnionInternationalCheminsdeFer/OSDM/master/specification/v3.3/OSDM-online-api-v3.3.0.yml&nocors#tag/Places), backed by [Trainline EU's stations dataset](https://github.com/trainline-eu/stations).
 
-The easiest way to use reStations is as a Docker container that comes pre-published including the dataset:
+The easiest way to use reStations is as a Docker container using the [image that we published including the dataset](https://hub.docker.com/r/mainmatter/restations):
 
 ```
-docker run -it -p 3000:3000 mainmatter/reStations
+docker run -p 3000:3000 --rm mainmatter/restations
+curl http://localhost:3000/places
 ```
 
 New versions of the image are published regularly as the dataset is updated.
