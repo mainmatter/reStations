@@ -33,5 +33,5 @@ jobs:
           context: .
           push: true
           tags: |
-            mainmatter/reStations:latest
-            mainmatter/reStations:${{ env.BUILD_DATE }}
+            mainmatter/restations:latest
+            mainmatter/restations:${{ env.BUILD_DATE }}
