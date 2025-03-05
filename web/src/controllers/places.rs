@@ -33,11 +33,23 @@ pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
     PlacesResponse::Ok(OsdmPlaceResponse { places })
 }
 
-pub async fn post(State(app_state): State<SharedAppState>) -> PlacesResponse {
+pub async fn search(
+    State(app_state): State<SharedAppState>,
+    Json(place_req): Json<OsdmPlaceRequest>,
+) -> PlacesResponse {
     let conn = app_state.pool.get().unwrap();
 
-    let places = db::find_all_stations(&conn)
-        .expect("Unexpected error at places::list")
+    let maybe_place_name = match place_req.place_input {
+        Some(value) => value.name,
+        None => None,
+    };
+    let query = match maybe_place_name {
+        Some(name) => db::search_all_stations(&conn, &name),
+        None => db::find_all_stations(&conn),
+    };
+
+    let places = query
+        .expect("Unexpected error at places::search")
         .into_iter()
         .map(station_to_osdm_place)
         .collect();

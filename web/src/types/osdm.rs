@@ -1,5 +1,9 @@
 use serde::{Deserialize, Serialize};
 
+//
+// Data
+//
+
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct OsdmGeoPosition {
     pub latitude: f32,
@@ -23,6 +27,25 @@ pub struct OsdmPlace {
     pub geo_position: Option<OsdmGeoPosition>,
     pub _links: Vec<OsdmLink>,
 }
+
+//
+// Requests
+//
+
+#[derive(Deserialize, Serialize)]
+pub struct OsdmInitialPlaceInput {
+    pub name: Option<String>,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OsdmPlaceRequest {
+    pub place_input: Option<OsdmInitialPlaceInput>,
+}
+
+//
+// Responses
+//
 
 #[derive(Deserialize, Serialize)]
 pub struct OsdmPlaceResponse {

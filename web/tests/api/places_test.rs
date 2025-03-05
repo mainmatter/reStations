@@ -1,7 +1,12 @@
+use axum::{
+    body::Body,
+    http::{self, Method},
+};
 use googletest::prelude::{assert_that, eq, gt};
 use restations_macros::test;
 use restations_web::test_helpers::{BodyExt, RouterExt, TestContext};
 use restations_web::types::osdm::*;
+use serde_json::json;
 
 #[test]
 async fn test_list_ok(context: &TestContext) {
@@ -11,6 +16,101 @@ async fn test_list_ok(context: &TestContext) {
     let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
 
     assert_that!(api_place.places.len(), gt(1));
+}
+
+#[test]
+async fn test_search_ok(context: &TestContext) {
+    let payload = json!(OsdmPlaceRequest {
+        place_input: Some(OsdmInitialPlaceInput {
+            name: Some(String::from("Berlin")),
+        }),
+    });
+    let response = context
+        .app
+        .request("/places")
+        .method(Method::POST)
+        .body(Body::from(payload.to_string()))
+        .header(http::header::CONTENT_TYPE, "application/json")
+        .send()
+        .await;
+    assert_that!(response.status(), eq(200));
+
+    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+
+    assert_that!(api_place.places.len(), gt(1));
+}
+
+#[test]
+async fn test_search_other_languages(context: &TestContext) {
+    let payload = json!(OsdmPlaceRequest {
+        place_input: Some(OsdmInitialPlaceInput {
+            name: Some(String::from("Seville")),
+        })
+    });
+    let response = context
+        .app
+        .request("/places")
+        .method(Method::POST)
+        .body(Body::from(payload.to_string()))
+        .header(http::header::CONTENT_TYPE, "application/json")
+        .send()
+        .await;
+    assert_that!(response.status(), eq(200));
+
+    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+
+    assert_that!(api_place.places.len(), gt(1));
+}
+
+#[test]
+async fn test_search_unknown_parameters(context: &TestContext) {
+    let payload = r#"
+        {
+            "placeInput": {
+                "name": "Lisbon"
+            },
+            "unknown": {
+                "parameter": "here"
+            }
+        }
+    "#;
+    let response = context
+        .app
+        .request("/places")
+        .method(Method::POST)
+        .body(Body::from(payload.to_string()))
+        .header(http::header::CONTENT_TYPE, "application/json")
+        .send()
+        .await;
+    assert_that!(response.status(), eq(200));
+
+    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+
+    assert_that!(api_place.places.len(), gt(1));
+}
+
+#[test]
+async fn test_search_missing_parameters(context: &TestContext) {
+    let payload = r#"
+        {
+            "unknown": {
+                "parameter": "here"
+            }
+        }
+    "#;
+    let response = context
+        .app
+        .request("/places")
+        .method(Method::POST)
+        .body(Body::from(payload.to_string()))
+        .header(http::header::CONTENT_TYPE, "application/json")
+        .send()
+        .await;
+    assert_that!(response.status(), eq(200));
+
+    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+
+    assert_that!(api_place.places.len(), gt(1000));
 }
 
 #[test]
