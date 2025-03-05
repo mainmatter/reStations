@@ -9,7 +9,8 @@ COPY ./macros ./macros
 COPY ./rust-toolchain.toml .
 COPY ./web ./web
 
-RUN rustup toolchain install 1.85-x86_64-unknown-linux-gnu
+RUN rustup toolchain install
+RUN rustup target add x86_64-unknown-linux-gnu
 RUN cargo build --bin restations-web --release
 
 FROM debian:bookworm-slim AS runtime
