@@ -1,14 +1,36 @@
-# restations
+# reStations
 
-This README explains how to collaborate on this Gerust application.
+This is an implementation of the [OSDM API spec](https://osdm.io)'s [Places endpoint](https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/UnionInternationalCheminsdeFer/OSDM/master/specification/v3.3/OSDM-online-api-v3.3.0.yml&nocors#tag/Places), backed by [Trainline EU's stations dataset](https://github.com/trainline-eu/stations).
 
-<add a description of the project here>
+The easiest way to use reStations is as a Docker container using the [image that we published including the dataset](https://hub.docker.com/r/mainmatter/restations):
 
-## Prerequisites
+```
+docker run -p 3000:3000 --rm mainmatter/restations
+curl http://localhost:3000/places
+```
+
+New versions of the image are published regularly as the dataset is updated.
+
+## Working with reStations
+
+reStations can also be used directly as a Rust project. To run the project, import the data into a local SQLite database first:
+
+```
+./scripts/sync-data
+```
+
+Then run the applications from the project root:
+
+```
+cargo run
+```
+
+### Prerequisites
 
 * Rust (install via [rustup](https://rustup.rs))
+* sqlite3 (see [SQLite](https://www.sqlite.org))
 
-## Project Structure
+### Project Structure
 
 Distinct parts of the project are separated into separate crates:
 
@@ -20,11 +42,11 @@ Distinct parts of the project are separated into separate crates:
 └── web    // The web interface as well as tests for it
 ```
 
-### Environment
+#### Environment
 
 The project uses `.env` and `.env.test` files to store configuration settings for the development and test environments respectively. Those files are read automatically by the parts of the application that require configuration settings to be present.
 
-## Commands
+### Commands
 
 Running the application in development mode:
 
@@ -46,7 +68,7 @@ cargo generate
 
 Building the project's docs:
 
-## Building documentation
+### Building documentation
 
 Build the project's documentation with:
 
