@@ -16,6 +16,7 @@ FROM debian:bookworm-slim AS runtime
 RUN apt-get update && apt-get install -y ca-certificates openssl && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/src/restations-builder/target/release/restations-web /usr/local/bin/restations-web
+COPY ./stations.sqlite.db .
 
 ENV APP_ENVIRONMENT=production
 ENV APP_SERVER__PORT=8888
