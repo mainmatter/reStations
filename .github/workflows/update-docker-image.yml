@@ -33,5 +33,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
-            ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:${{ env.BUILD_DATE }}
+            mainmatter/reStations:latest
+            mainmatter/reStations:${{ env.BUILD_DATE }}
