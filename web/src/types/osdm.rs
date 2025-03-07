@@ -23,6 +23,7 @@ pub struct OsdmLink {
 pub struct OsdmPlace {
     pub id: String,
     pub object_type: String,
+    pub name: String,
     pub alternative_ids: Vec<String>,
     pub geo_position: Option<OsdmGeoPosition>,
     pub _links: Vec<OsdmLink>,
