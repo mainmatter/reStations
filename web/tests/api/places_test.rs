@@ -122,7 +122,7 @@ async fn test_show_ok(context: &TestContext) {
 
     assert_that!(api_place.places.len(), eq(1));
     let place = &api_place.places[0];
-    assert_that!(place.id, eq("9430007"));
+    assert_that!(place.id, eq("urn:uic:stn:9430007"));
     assert_that!(place.object_type, eq("StopPlace"));
     assert_that!(
         place.geo_position.as_ref().unwrap(),
