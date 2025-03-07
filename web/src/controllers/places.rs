@@ -97,7 +97,7 @@ fn station_to_osdm_place(station: StationRecord) -> OsdmPlace {
     };
 
     OsdmPlace {
-        id: station.uic,
+        id: format!("urn:uic:stn:{}", station.uic),
         object_type: "StopPlace".into(),
         name: station.name,
         alternative_ids: vec![],
