@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct OsdmGeoPosition {
-    pub latitude: f32,
-    pub longitude: f32,
+    pub latitude: f64,
+    pub longitude: f64,
 }
 
 #[derive(Deserialize, Serialize)]
