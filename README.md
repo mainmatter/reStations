@@ -43,6 +43,13 @@ Next, export an environment variable to point to the database:
 export DATABASE_URL=sqlite:stations.sqlite.db
 ```
 
+Install `sqlx-cli` and prepare the sqlx cache:
+
+```
+cargo install sqlx-cli
+cargo sqlx prepare
+```
+
 This is important since reStations uses sqlx which does compile-time checks on the database schema and needs the `DATABASE_URL` environment variable to be able to connect to the database.
 
 Then run the applications from the project root:
