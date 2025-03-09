@@ -5,6 +5,7 @@ use crate::types::station_record::StationRecord;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
+use std::convert::From;
 
 pub enum PlacesResponse {
     Ok(OsdmPlaceResponse),
@@ -20,16 +21,42 @@ impl IntoResponse for PlacesResponse {
     }
 }
 
+impl From<StationRecord> for OsdmPlace {
+    fn from(station: StationRecord) -> Self {
+        let geo_position = match (station.latitude, station.longitude) {
+            (Some(latitude), Some(longitude)) => Some(OsdmGeoPosition {
+                latitude,
+                longitude,
+            }),
+            _ => None,
+        };
+
+        OsdmPlace {
+            id: format!("urn:uic:stn:{}", station.uic),
+            object_type: "StopPlace".into(),
+            name: station.name,
+            alternative_ids: vec![],
+            geo_position,
+            _links: vec![],
+        }
+    }
+}
+
+impl From<Vec<StationRecord>> for OsdmPlaceResponse {
+    fn from(stations: Vec<StationRecord>) -> Self {
+        OsdmPlaceResponse {
+            places: stations.into_iter().map(|station| station.into()).collect(),
+        }
+    }
+}
+
 #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
     let places = db::find_all_stations(&app_state.pool)
         .await
-        .expect("Unexpected error at places::list")
-        .into_iter()
-        .map(station_to_osdm_place)
-        .collect();
+        .expect("Unexpected error at places::list");
 
-    PlacesResponse::Ok(OsdmPlaceResponse { places })
+    PlacesResponse::Ok(places.into())
 }
 
 pub async fn search(
@@ -45,13 +72,9 @@ pub async fn search(
         None => db::find_all_stations(&app_state.pool).await,
     };
 
-    let places = query
-        .expect("Unexpected error at places::search")
-        .into_iter()
-        .map(station_to_osdm_place)
-        .collect();
+    let places = query.expect("Unexpected error at places::search");
 
-    PlacesResponse::Ok(OsdmPlaceResponse { places })
+    PlacesResponse::Ok(places.into())
 }
 
 #[axum::debug_handler]
@@ -67,11 +90,7 @@ pub async fn show(
 }
 
 fn render_place_response(station: StationRecord) -> PlacesResponse {
-    let response = OsdmPlaceResponse {
-        places: vec![station_to_osdm_place(station)],
-    };
-
-    PlacesResponse::Ok(response)
+    PlacesResponse::Ok(vec![station].into())
 }
 
 fn render_not_found(place_id: String) -> PlacesResponse {
@@ -80,23 +99,4 @@ fn render_not_found(place_id: String) -> PlacesResponse {
         title: format!("Could not find place with id #{}", place_id),
     };
     PlacesResponse::NotFound(api_problem)
-}
-
-fn station_to_osdm_place(station: StationRecord) -> OsdmPlace {
-    let geo_position = match (station.latitude, station.longitude) {
-        (Some(latitude), Some(longitude)) => Some(OsdmGeoPosition {
-            latitude,
-            longitude,
-        }),
-        _ => None,
-    };
-
-    OsdmPlace {
-        id: format!("urn:uic:stn:{}", station.uic),
-        object_type: "StopPlace".into(),
-        name: station.name,
-        alternative_ids: vec![],
-        geo_position,
-        _links: vec![],
-    }
 }
