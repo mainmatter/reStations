@@ -32,7 +32,7 @@ pub async fn create_pool(db_file: &str) -> DbPool {
 pub async fn find_station(db: &DbPool, place_id: &String) -> Result<StationRecord, DbError> {
     sqlx::query_as!(
         StationRecord,
-        "SELECT * FROM stations WHERE uic = $1",
+        "SELECT id, name, uic, latitude, longitude, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh FROM stations WHERE uic = $1",
         place_id
     )
     .fetch_optional(db)
@@ -46,7 +46,7 @@ pub async fn find_station(db: &DbPool, place_id: &String) -> Result<StationRecor
 pub async fn find_all_stations(db: &DbPool) -> Result<Vec<StationRecord>, DbError> {
     let stations = sqlx::query_as!(
         StationRecord,
-        "SELECT * FROM stations WHERE uic IS NOT NULL"
+        "SELECT id, name, uic, latitude, longitude, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh FROM stations WHERE uic IS NOT NULL"
     )
     .fetch_all(db)
     .await?;
@@ -55,7 +55,7 @@ pub async fn find_all_stations(db: &DbPool) -> Result<Vec<StationRecord>, DbErro
 
 pub async fn search_all_stations(db: &DbPool, name: &str) -> Result<Vec<StationRecord>, DbError> {
     let pattern = format!("%{}%", name);
-    let stations = sqlx::query_as!(StationRecord, "SELECT * from stations  WHERE uic IS NOT NULL AND (name like $1 OR info_de like $1 OR info_en like $1 OR info_es like $1 OR info_fr like $1 OR info_it like $1 OR info_nb like $1 OR info_nl like $1 OR info_cs like $1 OR info_da like $1 OR info_hu like $1 OR info_ja like $1 OR info_ko like $1 OR info_pl like $1 OR info_pt like $1 OR info_ru like $1 OR info_sv like $1 OR info_tr like $1 OR info_zh like $1)", pattern)
+    let stations = sqlx::query_as!(StationRecord, "SELECT id, name, uic, latitude, longitude, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh from stations  WHERE uic IS NOT NULL AND (name like $1 OR info_de like $1 OR info_en like $1 OR info_es like $1 OR info_fr like $1 OR info_it like $1 OR info_nb like $1 OR info_nl like $1 OR info_cs like $1 OR info_da like $1 OR info_hu like $1 OR info_ja like $1 OR info_ko like $1 OR info_pl like $1 OR info_pt like $1 OR info_ru like $1 OR info_sv like $1 OR info_tr like $1 OR info_zh like $1)", pattern)
             .fetch_all(db)
             .await?;
     Ok(stations)
