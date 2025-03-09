@@ -4,8 +4,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Default, PartialEq)]
 #[serde(default)]
 pub struct StationRecord {
-    // TODO figure out exact types for each fields
-    // Where necessary, create newtypes that parse and validate the input
     pub id: i64,
     pub name: String,
     pub slug: Option<String>,
