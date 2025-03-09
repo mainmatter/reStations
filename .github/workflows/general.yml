@@ -11,35 +11,42 @@ jobs:
     name: "Rust Format"
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions-rust-lang/setup-rust-toolchain@v1
-      with:
-        components: rustfmt
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rustfmt
 
-    - name: fmt
-      run: cargo fmt --all --check
+      - name: fmt
+        run: cargo fmt --all --check
 
   clippy:
     name: "Clippy"
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions-rust-lang/setup-rust-toolchain@v1
-      with:
-        components: clippy
-    
-    - name: clippy
-      run: cargo clippy --all-targets -- -D warnings
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy
+
+      - run: ./scripts/sync-data
+
+      - name: clippy
+        run: |
+          export DATABASE_URL=sqlite:stations.sqlite.db
+          cargo clippy --all-targets -- -D warnings
 
   test:
     name: "Test"
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
 
-    - run: ./scripts/sync-data    
-    - name: test
-      run: cargo test
+      - run: ./scripts/sync-data
+
+      - name: test
+        run: |
+          export DATABASE_URL=sqlite:stations.sqlite.db
+          cargo test

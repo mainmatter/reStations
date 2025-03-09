@@ -37,6 +37,14 @@ reStations can also be used directly as a Rust project. To run the project, impo
 ./scripts/sync-data
 ```
 
+Next, export an environment variable to point to the database:
+
+```
+export DATABASE_URL=sqlite:stations.sqlite.db
+```
+
+This is important since reStations uses sqlx which does compile-time checks on the database schema and needs the `DATABASE_URL` environment variable to be able to connect to the database.
+
 Then run the applications from the project root:
 
 ```

@@ -22,9 +22,8 @@ impl IntoResponse for PlacesResponse {
 
 #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
-    let conn = app_state.pool.get().unwrap();
-
-    let places = db::find_all_stations(&conn)
+    let places = db::find_all_stations(&app_state.pool)
+        .await
         .expect("Unexpected error at places::list")
         .into_iter()
         .map(station_to_osdm_place)
@@ -37,15 +36,13 @@ pub async fn search(
     State(app_state): State<SharedAppState>,
     Json(place_req): Json<OsdmPlaceRequest>,
 ) -> PlacesResponse {
-    let conn = app_state.pool.get().unwrap();
-
     let maybe_place_name = match place_req.place_input {
         Some(value) => value.name,
         None => None,
     };
     let query = match maybe_place_name {
-        Some(name) => db::search_all_stations(&conn, &name),
-        None => db::find_all_stations(&conn),
+        Some(name) => db::search_all_stations(&app_state.pool, &name).await,
+        None => db::find_all_stations(&app_state.pool).await,
     };
 
     let places = query
@@ -62,9 +59,7 @@ pub async fn show(
     State(app_state): State<SharedAppState>,
     Path(place_id): Path<String>,
 ) -> PlacesResponse {
-    let conn = app_state.pool.get().unwrap();
-
-    match db::find_station(&conn, &place_id) {
+    match db::find_station(&app_state.pool, &place_id).await {
         Ok(station) => render_place_response(station),
         Err(db::DbError::RecordNotFound(_msg)) => render_not_found(place_id),
         _ => todo!("Unexpected error at places::show"),
