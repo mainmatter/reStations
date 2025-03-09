@@ -1,5 +1,4 @@
 use super::types::station_record::StationRecord;
-use tokio::sync::mpsc;
 
 #[derive(serde::Serialize, Debug, thiserror::Error)]
 pub enum DbError {
@@ -18,8 +17,6 @@ impl From<sqlx::Error> for DbError {
         Self::Database(value.to_string())
     }
 }
-
-type Sender = mpsc::Sender<Result<StationRecord, DbError>>;
 
 pub use sqlx::sqlite::SqlitePool as DbPool;
 
@@ -62,18 +59,4 @@ pub async fn search_all_stations(db: &DbPool, name: &str) -> Result<Vec<StationR
             .fetch_all(db)
             .await?;
     Ok(stations)
-}
-
-pub async fn stream_all_stations(db: &DbPool, sender: Sender) {
-    let stations = sqlx::query_as!(
-        StationRecord,
-        "SELECT * FROM stations WHERE uic IS NOT NULL"
-    )
-    .fetch_all(db)
-    .await
-    .unwrap();
-
-    for station in stations {
-        sender.blocking_send(Ok(station)).ok();
-    }
 }
