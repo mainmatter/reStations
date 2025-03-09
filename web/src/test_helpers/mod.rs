@@ -1,4 +1,4 @@
-use crate::db;
+use crate::db::db;
 use crate::routes::init_routes;
 use crate::state::AppState;
 use axum::{

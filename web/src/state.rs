@@ -1,4 +1,4 @@
-use super::db;
+use crate::db::db;
 use restations_config::Config;
 use std::sync::Arc;
 

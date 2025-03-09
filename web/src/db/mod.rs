@@ -1,2 +1,2 @@
-pub mod osdm;
+pub mod db;
 pub mod station_record;

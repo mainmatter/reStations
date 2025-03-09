@@ -1,4 +1,4 @@
-use super::types::station_record::StationRecord;
+use crate::db::station_record::StationRecord;
 
 #[derive(serde::Serialize, Debug, thiserror::Error)]
 pub enum DbError {

@@ -1,7 +1,7 @@
-use crate::db;
+use crate::controllers::osdm::*;
+use crate::db::db;
+use crate::db::station_record::StationRecord;
 use crate::state::SharedAppState;
-use crate::types::osdm::*;
-use crate::types::station_record::StationRecord;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
