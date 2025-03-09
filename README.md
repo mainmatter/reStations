@@ -6,10 +6,28 @@ The easiest way to use reStations is as a Docker container using the [image that
 
 ```
 docker run -p 3000:3000 --rm mainmatter/restations
-curl http://localhost:3000/places
+curl localhost:3000/places
 ```
 
 New versions of the image are published regularly as the dataset is updated.
+
+## Endpoints supported
+
+* `GET /places`
+* `GET /places/{id}`
+* `POST /places` (search)
+
+Curl examples
+
+```
+curl localhost:3000/places
+curl localhost:3000/places/8721428 //Lisboa Santa Apolónia
+curl -X POST -H "Content-Type: application/json" \
+-d '{"placeInput": {"name": "Lisbon"}}' \
+localhost:3000/places
+```
+
+(`geoPosition` and `restrictions` request fields support coming soon for POST /places)
 
 ## Working with reStations
 
