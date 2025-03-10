@@ -8,6 +8,7 @@ COPY ./config ./config
 COPY ./macros ./macros
 COPY ./rust-toolchain.toml .
 COPY ./web ./web
+COPY ./stations.sqlite.db ./stations.sqlite.db
 
 RUN adduser \
   --disabled-password \
@@ -19,6 +20,7 @@ RUN adduser \
   "restations"
 
 RUN rustup toolchain install
+ENV DATABASE_URL=sqlite:stations.sqlite.db
 RUN cargo build --bin restations-web --release
 
 FROM rust:1.85-slim AS runtime
