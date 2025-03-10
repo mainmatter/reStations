@@ -19,8 +19,6 @@ pub mod middlewares;
 pub mod routes;
 /// Contains the application state definition and functionality to initialize it.
 pub mod state;
-/// Bunch of types we need
-pub mod types;
 
 /// Runs the application.
 ///

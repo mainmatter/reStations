@@ -3,6 +3,7 @@
 **/debug
 **/*.pdb
 **/*.rs.bk
+.sqlx/
 
 # Editors
 .idea

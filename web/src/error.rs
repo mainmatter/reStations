@@ -1,7 +1,7 @@
 use axum::{http::StatusCode, response::IntoResponse};
 use std::fmt::{Debug, Display};
 
-use super::db;
+use crate::db::error::DbError;
 
 /// Error type that encapsultes anything that can go wrong
 /// in this application. Implements [IntoResponse],
@@ -18,7 +18,7 @@ pub enum Error {
     Deserialization(#[from] csv_async::Error),
 
     #[error("SQLite error: {0}")]
-    Sqlite(#[from] db::DbError),
+    Sqlite(#[from] DbError),
 
     /// Any other error. Handled as an Internal Server Error.
     #[error("Error: {0}")]
