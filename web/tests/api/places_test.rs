@@ -4,7 +4,7 @@ use axum::{
 };
 use googletest::prelude::{assert_that, eq, gt};
 use restations_macros::test;
-use restations_web::controllers::osdm::*;
+use restations_web::controllers::places::*;
 use restations_web::test_helpers::{BodyExt, RouterExt, TestContext};
 use serde_json::json;
 
