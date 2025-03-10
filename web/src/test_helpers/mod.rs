@@ -1,4 +1,4 @@
-use crate::db::lib::{create_pool, DbPool};
+use crate::db::pool::{create_pool, DbPool};
 use crate::routes::init_routes;
 use crate::state::AppState;
 use axum::{

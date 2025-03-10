@@ -1,33 +1,6 @@
+use crate::db::error::DbError;
+use crate::db::pool::DbPool;
 use crate::db::station_record::StationRecord;
-
-#[derive(serde::Serialize, Debug, thiserror::Error)]
-pub enum DbError {
-    #[error("Unknown error")]
-    UnknownError,
-
-    #[error("Database error: {0}")]
-    Database(String),
-
-    #[error("RecordNotFound: {0}")]
-    RecordNotFound(String),
-}
-
-impl From<sqlx::Error> for DbError {
-    fn from(value: sqlx::Error) -> Self {
-        Self::Database(value.to_string())
-    }
-}
-
-pub use sqlx::sqlite::SqlitePool as DbPool;
-
-pub async fn create_pool(db_file: &str) -> DbPool {
-    let options = sqlx::sqlite::SqliteConnectOptions::new()
-        .filename(db_file)
-        .create_if_missing(false);
-    sqlx::sqlite::SqlitePool::connect_with(options)
-        .await
-        .expect("Failed to create pool")
-}
 
 pub async fn find_station(db: &DbPool, place_id: &String) -> Result<StationRecord, DbError> {
     sqlx::query_as!(

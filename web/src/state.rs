@@ -1,4 +1,4 @@
-use crate::db::lib::{create_pool, DbPool};
+use crate::db::pool::{create_pool, DbPool};
 use restations_config::Config;
 use std::sync::Arc;
 

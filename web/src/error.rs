@@ -1,7 +1,7 @@
 use axum::{http::StatusCode, response::IntoResponse};
 use std::fmt::{Debug, Display};
 
-use crate::db::lib::DbError;
+use crate::db::error::DbError;
 
 /// Error type that encapsultes anything that can go wrong
 /// in this application. Implements [IntoResponse],
