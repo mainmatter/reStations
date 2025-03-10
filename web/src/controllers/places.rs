@@ -1,5 +1,5 @@
 use crate::controllers::osdm::*;
-use crate::db::db;
+use crate::db::lib::*;
 use crate::db::station_record::StationRecord;
 use crate::state::SharedAppState;
 use axum::extract::{Path, State};
@@ -52,7 +52,7 @@ impl From<Vec<StationRecord>> for OsdmPlaceResponse {
 
 #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
-    let places = db::find_all_stations(&app_state.pool)
+    let places = find_all_stations(&app_state.pool)
         .await
         .expect("Unexpected error at places::list");
 
@@ -68,8 +68,8 @@ pub async fn search(
         None => None,
     };
     let query = match maybe_place_name {
-        Some(name) => db::search_all_stations(&app_state.pool, &name).await,
-        None => db::find_all_stations(&app_state.pool).await,
+        Some(name) => search_all_stations(&app_state.pool, &name).await,
+        None => find_all_stations(&app_state.pool).await,
     };
 
     let places = query.expect("Unexpected error at places::search");
@@ -82,9 +82,9 @@ pub async fn show(
     State(app_state): State<SharedAppState>,
     Path(place_id): Path<String>,
 ) -> PlacesResponse {
-    match db::find_station(&app_state.pool, &place_id).await {
+    match find_station(&app_state.pool, &place_id).await {
         Ok(station) => render_place_response(station),
-        Err(db::DbError::RecordNotFound(_msg)) => render_not_found(place_id),
+        Err(DbError::RecordNotFound(_msg)) => render_not_found(place_id),
         _ => todo!("Unexpected error at places::show"),
     }
 }
