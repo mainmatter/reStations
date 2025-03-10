@@ -1,4 +1,4 @@
-use crate::db;
+use crate::db::pool::{create_pool, DbPool};
 use crate::routes::init_routes;
 use crate::state::AppState;
 use axum::{
@@ -180,7 +180,7 @@ impl BodyExt for Body {
 pub struct TestContext {
     /// The application that is being tested.
     pub app: Router,
-    pub pool: db::DbPool,
+    pub pool: DbPool,
 }
 
 /// Sets up a test and returns a [`TestContext`].
@@ -192,7 +192,7 @@ pub async fn setup() -> TestContext {
     let init_config: OnceCell<Config> = OnceCell::new();
     let _config = init_config.get_or_init(|| load_config(&Environment::Test).unwrap());
 
-    let pool = db::create_pool("../stations.sqlite.db").await;
+    let pool = create_pool("../stations.sqlite.db").await;
     let app = init_routes(AppState { pool: pool.clone() });
 
     TestContext { app, pool }

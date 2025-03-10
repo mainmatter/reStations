@@ -1,11 +1,67 @@
-use crate::db;
+use crate::db::error::DbError;
+use crate::db::finders::*;
+use crate::db::station_record::StationRecord;
 use crate::state::SharedAppState;
-use crate::types::osdm::*;
-use crate::types::station_record::StationRecord;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
+use serde::{Deserialize, Serialize};
 use std::convert::From;
+
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+pub struct OsdmGeoPosition {
+    pub latitude: f64,
+    pub longitude: f64,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct OsdmLink {
+    rel: String,
+    href: String,
+    _type: String,
+    value: String,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OsdmPlace {
+    pub id: String,
+    pub object_type: String,
+    pub name: String,
+    pub alternative_ids: Vec<String>,
+    pub geo_position: Option<OsdmGeoPosition>,
+    pub _links: Vec<OsdmLink>,
+}
+
+//
+// Requests
+//
+
+#[derive(Deserialize, Serialize)]
+pub struct OsdmInitialPlaceInput {
+    pub name: Option<String>,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OsdmPlaceRequest {
+    pub place_input: Option<OsdmInitialPlaceInput>,
+}
+
+//
+// Responses
+//
+
+#[derive(Deserialize, Serialize)]
+pub struct OsdmPlaceResponse {
+    pub places: Vec<OsdmPlace>,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct OsdmProblem {
+    pub code: String,
+    pub title: String,
+}
 
 pub enum PlacesResponse {
     Ok(OsdmPlaceResponse),
@@ -52,7 +108,7 @@ impl From<Vec<StationRecord>> for OsdmPlaceResponse {
 
 #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
-    let places = db::find_all_stations(&app_state.pool)
+    let places = find_all_stations(&app_state.pool)
         .await
         .expect("Unexpected error at places::list");
 
@@ -68,8 +124,8 @@ pub async fn search(
         None => None,
     };
     let query = match maybe_place_name {
-        Some(name) => db::search_all_stations(&app_state.pool, &name).await,
-        None => db::find_all_stations(&app_state.pool).await,
+        Some(name) => search_all_stations(&app_state.pool, &name).await,
+        None => find_all_stations(&app_state.pool).await,
     };
 
     let places = query.expect("Unexpected error at places::search");
@@ -82,9 +138,9 @@ pub async fn show(
     State(app_state): State<SharedAppState>,
     Path(place_id): Path<String>,
 ) -> PlacesResponse {
-    match db::find_station(&app_state.pool, &place_id).await {
+    match find_station(&app_state.pool, &place_id).await {
         Ok(station) => render_place_response(station),
-        Err(db::DbError::RecordNotFound(_msg)) => render_not_found(place_id),
+        Err(DbError::RecordNotFound(_msg)) => render_not_found(place_id),
         _ => todo!("Unexpected error at places::show"),
     }
 }
