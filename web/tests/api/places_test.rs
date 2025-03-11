@@ -8,6 +8,8 @@ use restations_web::controllers::places::*;
 use restations_web::test_helpers::{BodyExt, RouterExt, TestContext};
 use serde_json::json;
 
+// GET /places
+//
 #[test]
 async fn test_list_ok(context: &TestContext) {
     let response = context.app.request("/places").send().await;
@@ -23,6 +25,7 @@ async fn test_search_ok(context: &TestContext) {
     let payload = json!(OsdmPlaceRequest {
         place_input: Some(OsdmInitialPlaceInput {
             name: Some(String::from("Berlin")),
+            geo_position: None,
         }),
     });
     let response = context
@@ -45,6 +48,7 @@ async fn test_search_other_languages(context: &TestContext) {
     let payload = json!(OsdmPlaceRequest {
         place_input: Some(OsdmInitialPlaceInput {
             name: Some(String::from("Seville")),
+            geo_position: None,
         })
     });
     let response = context
@@ -60,6 +64,33 @@ async fn test_search_other_languages(context: &TestContext) {
     let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
 
     assert_that!(api_place.places.len(), gt(1));
+}
+
+#[test]
+async fn test_search_geo_position(context: &TestContext) {
+    // Palermo Centrale
+    let payload = json!(OsdmPlaceRequest {
+        place_input: Some(OsdmInitialPlaceInput {
+            name: None,
+            geo_position: Some(OsdmGeoPosition {
+                latitude: 38.109417,
+                longitude: 13.367472,
+            })
+        }),
+    });
+    let response = context
+        .app
+        .request("/places")
+        .method(Method::POST)
+        .body(Body::from(payload.to_string()))
+        .header(http::header::CONTENT_TYPE, "application/json")
+        .send()
+        .await;
+    assert_that!(response.status(), eq(200));
+
+    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+
+    assert_that!(api_place.places.len(), eq(1));
 }
 
 #[test]
@@ -113,6 +144,8 @@ async fn test_search_missing_parameters(context: &TestContext) {
     assert_that!(api_place.places.len(), gt(1000));
 }
 
+// GET /places/{id}
+//
 #[test]
 async fn test_show_ok(context: &TestContext) {
     let response = context.app.request("/places/9430007").send().await;

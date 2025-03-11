@@ -40,6 +40,7 @@ pub struct OsdmPlace {
 #[derive(Deserialize, Serialize)]
 pub struct OsdmInitialPlaceInput {
     pub name: Option<String>,
+    pub geo_position: Option<OsdmGeoPosition>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -119,12 +120,36 @@ pub async fn search(
     State(app_state): State<SharedAppState>,
     Json(place_req): Json<OsdmPlaceRequest>,
 ) -> PlacesResponse {
-    let maybe_place_name = match place_req.place_input {
-        Some(value) => value.name,
-        None => None,
-    };
-    let query = match maybe_place_name {
-        Some(name) => search_all_stations(&app_state.pool, &name).await,
+    let maybe_place_input = place_req.place_input;
+
+    let query = match maybe_place_input {
+        Some(input) => {
+            match (input.name, input.geo_position) {
+                // Search by name and position
+                (Some(name), Some(position)) => {
+                    search_stations_by_name_and_position(
+                        &app_state.pool,
+                        &name,
+                        position.latitude,
+                        position.longitude
+                    ).await
+                },
+                // Search by name only
+                (Some(name), None) => {
+                    search_all_stations(&app_state.pool, &name).await
+                },
+                // Search by position only
+                (None, Some(position)) => {
+                    search_stations_by_position(
+                        &app_state.pool,
+                        position.latitude,
+                        position.longitude
+                    ).await
+                },
+                // No search criteria, return all
+                (None, None) => find_all_stations(&app_state.pool).await,
+            }
+        },
         None => find_all_stations(&app_state.pool).await,
     };
 
