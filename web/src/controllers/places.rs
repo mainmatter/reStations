@@ -38,6 +38,7 @@ pub struct OsdmPlace {
 //
 
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OsdmInitialPlaceInput {
     pub name: Option<String>,
     pub geo_position: Option<OsdmGeoPosition>,
