@@ -90,8 +90,13 @@ async fn test_search_geo_position(context: &TestContext) {
 
     let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), eq(1));
+    // 20 is the limit on the results
+    assert_that!(api_place.places.len(), eq(20));
 }
+
+// TODO test that Palermo Centrale is the first result
+
+// TODO test when either lat or lon is missing
 
 #[test]
 async fn test_search_unknown_parameters(context: &TestContext) {

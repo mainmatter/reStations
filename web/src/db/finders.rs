@@ -1,6 +1,6 @@
 use crate::db::error::DbError;
 use crate::db::pool::DbPool;
-use crate::db::station_record::StationRecord;
+use crate::db::station_record::{StationRecord, SearchStationRecord};
 use std::f64::consts::PI;
 
 pub async fn find_station(db: &DbPool, place_id: &String) -> Result<StationRecord, DbError> {
@@ -61,7 +61,9 @@ pub async fn search_stations_by_position(
     );
 
     // Fetch candidates
-    let mut stations = query.fetch_all(pool).await?;
+    let db_stations = query.fetch_all(pool).await?;
+    // Convert to SearchStationRecord, which includes custom fields for calculating distance
+    let mut stations: Vec<SearchStationRecord> = db_stations.into_iter().map(Into::into).collect();
 
     // Calculate actual distances and sort
     for station in &mut stations {
@@ -76,8 +78,10 @@ pub async fn search_stations_by_position(
         a.distance.unwrap_or(f64::MAX).partial_cmp(&b.distance.unwrap_or(f64::MAX)).unwrap()
     });
 
+    let db_stations: Vec<StationRecord> = stations.into_iter().map(Into::into).collect();
+
     // Return the closest 20
-    Ok(stations.into_iter().take(20).collect())
+    Ok(db_stations.into_iter().take(20).collect())
 }
 
 /// Search for stations by name and proximity to geographic coordinates
@@ -109,7 +113,9 @@ pub async fn search_stations_by_name_and_position(
     );
 
     // Fetch candidates
-    let mut stations = query.fetch_all(pool).await?;
+    let db_stations = query.fetch_all(pool).await?;
+    // Convert to SearchStationRecord, which includes custom fields for calculating distance
+    let mut stations: Vec<SearchStationRecord> = db_stations.into_iter().map(Into::into).collect();
 
     // Calculate scores based on name match and distance
     for station in &mut stations {
@@ -136,8 +142,10 @@ pub async fn search_stations_by_name_and_position(
         a.relevance_score.unwrap_or(f64::MAX).partial_cmp(&b.relevance_score.unwrap_or(f64::MAX)).unwrap()
     });
 
-    // Return the best 20 matches
-    Ok(stations.into_iter().take(20).collect())
+    let db_stations: Vec<StationRecord> = stations.into_iter().map(Into::into).collect();
+
+    // Return the closest 20
+    Ok(db_stations.into_iter().take(20).collect())
 }
 
 /// Calculate haversine distance in kilometers between two points
