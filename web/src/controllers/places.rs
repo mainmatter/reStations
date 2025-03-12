@@ -108,6 +108,8 @@ impl From<Vec<StationRecord>> for OsdmPlaceResponse {
     }
 }
 
+// Endpoint handlers
+//
 #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
     let places = find_all_stations(&app_state.pool)
@@ -171,6 +173,8 @@ pub async fn show(
     }
 }
 
+// Response rendering helpers
+//
 fn render_place_response(station: StationRecord) -> PlacesResponse {
     PlacesResponse::Ok(vec![station].into())
 }

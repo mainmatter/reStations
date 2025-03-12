@@ -1,6 +1,6 @@
 use crate::db::error::DbError;
 use crate::db::pool::DbPool;
-use crate::db::station_record::{SearchStationRecord, StationRecord};
+use crate::db::station_record::StationRecord;
 use std::f64::consts::PI;
 
 pub async fn find_station(db: &DbPool, place_id: &String) -> Result<StationRecord, DbError> {
@@ -68,26 +68,27 @@ pub async fn search_stations_by_position(
 
     // Fetch candidates
     let db_stations = query.fetch_all(pool).await?;
-    // Convert to SearchStationRecord, which includes custom fields for calculating distance
-    let mut stations: Vec<SearchStationRecord> = db_stations.into_iter().map(Into::into).collect();
+    // Convert to GeoPositionSearchResult, which includes custom fields for calculating distance
+    let mut geo_search_results: Vec<GeoPositionSearchResult> =
+        db_stations.into_iter().map(Into::into).collect();
 
-    // Calculate actual distances and sort
-    for station in &mut stations {
-        if let (Some(lat), Some(lon)) = (station.latitude, station.longitude) {
+    // Calculate actugeo_search_resultsal distances and sort
+    for result in &mut geo_search_results {
+        if let (Some(lat), Some(lon)) = (result.station.latitude, result.station.longitude) {
             // Add a custom field for distance (we'll use this for sorting)
-            station.distance = Some(haversine_distance(latitude, longitude, lat, lon));
+            result.distance = Some(haversine_distance(latitude, longitude, lat, lon));
         }
     }
 
     // Sort by distance
-    stations.sort_by(|a, b| {
+    geo_search_results.sort_by(|a, b| {
         a.distance
             .unwrap_or(f64::MAX)
             .partial_cmp(&b.distance.unwrap_or(f64::MAX))
             .unwrap()
     });
 
-    let db_stations: Vec<StationRecord> = stations.into_iter().map(Into::into).collect();
+    let db_stations: Vec<StationRecord> = geo_search_results.into_iter().map(Into::into).collect();
 
     // Return the closest 20
     Ok(db_stations.into_iter().take(20).collect())
@@ -129,18 +130,19 @@ pub async fn search_stations_by_name_and_position(
 
     // Fetch candidates
     let db_stations = query.fetch_all(pool).await?;
-    // Convert to SearchStationRecord, which includes custom fields for calculating distance
-    let mut stations: Vec<SearchStationRecord> = db_stations.into_iter().map(Into::into).collect();
+    // Convert to GeoPositionSearchResult, which includes custom fields for calculating distance
+    let mut geo_search_results: Vec<GeoPositionSearchResult> =
+        db_stations.into_iter().map(Into::into).collect();
 
     // Calculate scores based on name match and distance
-    for station in &mut stations {
-        if let (Some(lat), Some(lon)) = (station.latitude, station.longitude) {
+    for result in &mut geo_search_results {
+        if let (Some(lat), Some(lon)) = (result.station.latitude, result.station.longitude) {
             let distance = haversine_distance(latitude, longitude, lat, lon);
-            station.distance = Some(distance);
+            result.distance = Some(distance);
 
             // Calculate a relevance score (lower is better)
             // We weight exact name matches higher than partial matches
-            let name_score = if station.name.to_lowercase() == name.to_lowercase() {
+            let name_score = if result.station.name.to_lowercase() == name.to_lowercase() {
                 0.0
             } else {
                 1.0
@@ -148,19 +150,19 @@ pub async fn search_stations_by_name_and_position(
 
             // Combined score (we'll store this temporarily in the distance field)
             // Lower score = better match
-            station.relevance_score = Some(name_score + (distance / 100.0));
+            result.relevance_score = Some(name_score + (distance / 100.0));
         }
     }
 
     // Sort by combined relevance score
-    stations.sort_by(|a, b| {
+    geo_search_results.sort_by(|a, b| {
         a.relevance_score
             .unwrap_or(f64::MAX)
             .partial_cmp(&b.relevance_score.unwrap_or(f64::MAX))
             .unwrap()
     });
 
-    let db_stations: Vec<StationRecord> = stations.into_iter().map(Into::into).collect();
+    let db_stations: Vec<StationRecord> = geo_search_results.into_iter().map(Into::into).collect();
 
     // Return the closest 20
     Ok(db_stations.into_iter().take(20).collect())
@@ -183,4 +185,42 @@ fn haversine_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
     let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
 
     earth_radius_km * c
+}
+
+// Needed for geo_position searches, where two computed
+// fields are required for sorting by distance:
+// - distance: The distance from the given position.
+// - relevance_score: The relevance score of the station.
+struct GeoPositionSearchResult {
+    /// The base station record
+    pub station: StationRecord,
+
+    /// Distance from the search point in kilometers
+    pub distance: Option<f64>,
+
+    /// Computed relevance score (lower is better)
+    pub relevance_score: Option<f64>,
+}
+
+impl GeoPositionSearchResult {
+    /// Create a new GeoPositionSearchResult from a StationRecord
+    pub fn new(station: StationRecord) -> Self {
+        Self {
+            station,
+            distance: None,
+            relevance_score: None,
+        }
+    }
+}
+
+impl From<StationRecord> for GeoPositionSearchResult {
+    fn from(station: StationRecord) -> Self {
+        Self::new(station)
+    }
+}
+
+impl From<GeoPositionSearchResult> for StationRecord {
+    fn from(result: GeoPositionSearchResult) -> Self {
+        result.station
+    }
 }
