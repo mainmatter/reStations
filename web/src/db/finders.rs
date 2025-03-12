@@ -1,6 +1,6 @@
 use crate::db::error::DbError;
 use crate::db::pool::DbPool;
-use crate::db::station_record::{StationRecord, SearchStationRecord};
+use crate::db::station_record::{SearchStationRecord, StationRecord};
 use std::f64::consts::PI;
 
 pub async fn find_station(db: &DbPool, place_id: &String) -> Result<StationRecord, DbError> {
@@ -56,8 +56,14 @@ pub async fn search_stations_by_position(
             AND latitude BETWEEN ? - ? AND ? + ?
             AND longitude BETWEEN ? - ? AND ? + ?
         "#,
-        latitude, approx_distance_deg, latitude, approx_distance_deg,
-        longitude, approx_distance_deg, longitude, approx_distance_deg
+        latitude,
+        approx_distance_deg,
+        latitude,
+        approx_distance_deg,
+        longitude,
+        approx_distance_deg,
+        longitude,
+        approx_distance_deg
     );
 
     // Fetch candidates
@@ -75,7 +81,10 @@ pub async fn search_stations_by_position(
 
     // Sort by distance
     stations.sort_by(|a, b| {
-        a.distance.unwrap_or(f64::MAX).partial_cmp(&b.distance.unwrap_or(f64::MAX)).unwrap()
+        a.distance
+            .unwrap_or(f64::MAX)
+            .partial_cmp(&b.distance.unwrap_or(f64::MAX))
+            .unwrap()
     });
 
     let db_stations: Vec<StationRecord> = stations.into_iter().map(Into::into).collect();
@@ -108,8 +117,14 @@ pub async fn search_stations_by_name_and_position(
             AND longitude BETWEEN ? - ? AND ? + ?
         "#,
         name_pattern,
-        latitude, approx_distance_deg, latitude, approx_distance_deg,
-        longitude, approx_distance_deg, longitude, approx_distance_deg
+        latitude,
+        approx_distance_deg,
+        latitude,
+        approx_distance_deg,
+        longitude,
+        approx_distance_deg,
+        longitude,
+        approx_distance_deg
     );
 
     // Fetch candidates
@@ -139,7 +154,10 @@ pub async fn search_stations_by_name_and_position(
 
     // Sort by combined relevance score
     stations.sort_by(|a, b| {
-        a.relevance_score.unwrap_or(f64::MAX).partial_cmp(&b.relevance_score.unwrap_or(f64::MAX)).unwrap()
+        a.relevance_score
+            .unwrap_or(f64::MAX)
+            .partial_cmp(&b.relevance_score.unwrap_or(f64::MAX))
+            .unwrap()
     });
 
     let db_stations: Vec<StationRecord> = stations.into_iter().map(Into::into).collect();
@@ -160,9 +178,8 @@ fn haversine_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
     let dlat = lat2_rad - lat1_rad;
     let dlon = lon2_rad - lon1_rad;
 
-    let a = (dlat/2.0).sin() * (dlat/2.0).sin() +
-            lat1_rad.cos() * lat2_rad.cos() *
-            (dlon/2.0).sin() * (dlon/2.0).sin();
+    let a = (dlat / 2.0).sin() * (dlat / 2.0).sin()
+        + lat1_rad.cos() * lat2_rad.cos() * (dlon / 2.0).sin() * (dlon / 2.0).sin();
     let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
 
     earth_radius_km * c

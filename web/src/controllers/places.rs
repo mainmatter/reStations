@@ -131,25 +131,25 @@ pub async fn search(
                         &app_state.pool,
                         &name,
                         position.latitude,
-                        position.longitude
-                    ).await
-                },
+                        position.longitude,
+                    )
+                    .await
+                }
                 // Search by name only
-                (Some(name), None) => {
-                    search_all_stations(&app_state.pool, &name).await
-                },
+                (Some(name), None) => search_all_stations(&app_state.pool, &name).await,
                 // Search by position only
                 (None, Some(position)) => {
                     search_stations_by_position(
                         &app_state.pool,
                         position.latitude,
-                        position.longitude
-                    ).await
-                },
+                        position.longitude,
+                    )
+                    .await
+                }
                 // No search criteria, return all
                 (None, None) => find_all_stations(&app_state.pool).await,
             }
-        },
+        }
         None => find_all_stations(&app_state.pool).await,
     };
 
