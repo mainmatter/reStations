@@ -72,7 +72,7 @@ pub async fn search_stations_by_position(
     let mut geo_search_results: Vec<GeoPositionSearchResult> =
         db_stations.into_iter().map(Into::into).collect();
 
-    // Calculate actugeo_search_resultsal distances and sort
+    // Calculate result distances and sort
     for result in &mut geo_search_results {
         if let (Some(lat), Some(lon)) = (result.station.latitude, result.station.longitude) {
             // Add a custom field for distance (we'll use this for sorting)
