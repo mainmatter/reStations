@@ -41,7 +41,7 @@ localhost:3000/places
 By geo position:
 ```
 curl -X POST -H "Content-Type: application/json" \
--d '{"placeInput": {"geoPosition": {"latitude": 38.109417, "longitude": 13.367472}}}' \
+-d '{"placeInput": {"geoPosition": {"latitude": 38.71387, "longitude": -9.122271}}}' \
 localhost:3000/places
 ```
 
