@@ -29,18 +29,19 @@ curl localhost:3000/places/8721428
 
 ### POST /places (search)
 
-Search stations with `Lisbon` in its name (can be in English or Portuguese, or other languages*) :
+Search stations with `Lisboa` in its name.
+
+(Works with both Portuguese and English versions, and in [other languages](https://github.com/trainline-eu/stations/blob/master/src/main/resources/languages.json) as well):
 ```
 curl -X POST -H "Content-Type: application/json" \
--d '{"placeInput": {"name": "Lisbon"}}' \
+-d '{"placeInput": {"name": "Lisboa"}}' \
 localhost:3000/places
 ```
-* see the complete set of languages supported [here](https://github.com/trainline-eu/stations/blob/master/src/main/resources/languages.json).
 
 By geo position:
 ```
 curl -X POST -H "Content-Type: application/json" \
--d '{"placeInput": {"geoPosition": {"latitude": 38.109417, "longitude": 13.367472}}}' \
+-d '{"placeInput": {"geoPosition": {"latitude": 38.71387, "longitude": -9.122271}}}' \
 localhost:3000/places
 ```
 
