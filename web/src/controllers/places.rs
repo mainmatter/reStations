@@ -125,6 +125,7 @@ pub async fn search(
 ) -> PlacesResponse {
     let maybe_place_input = place_req.place_input;
 
+    // TODO improve input handling
     let query = match maybe_place_input {
         Some(input) => {
             match (input.name, input.geo_position) {
