@@ -74,8 +74,8 @@ impl Search {
 
         // Fetch candidates
         let db_stations = query.fetch_all(pool).await?;
-        // Convert to GeoPositionSearchResult, which includes custom fields for calculating distance
-        let mut geo_search_results: Vec<GeoPositionSearchResult> =
+        // Convert to GeoPositionFinder, which includes custom fields for calculating distance
+        let mut geo_search_results: Vec<GeoPositionFinder> =
             db_stations.into_iter().map(Into::into).collect();
 
         // Calculate result distances and sort
@@ -138,8 +138,8 @@ impl Search {
 
         // Fetch candidates
         let db_stations = query.fetch_all(pool).await?;
-        // Convert to GeoPositionSearchResult, which includes custom fields for calculating distance
-        let mut geo_search_results: Vec<GeoPositionSearchResult> =
+        // Convert to GeoPositionFinder, which includes custom fields for calculating distance
+        let mut geo_search_results: Vec<GeoPositionFinder> =
             db_stations.into_iter().map(Into::into).collect();
 
         // Calculate scores based on name match and distance
@@ -201,7 +201,7 @@ impl Search {
 // fields are required for sorting by distance:
 // - distance: The distance from the given position.
 // - relevance_score: The relevance score of the station.
-struct GeoPositionSearchResult {
+struct GeoPositionFinder {
     /// The base station record
     pub station: StationRecord,
 
@@ -212,8 +212,8 @@ struct GeoPositionSearchResult {
     pub relevance_score: Option<f64>,
 }
 
-impl GeoPositionSearchResult {
-    /// Create a new GeoPositionSearchResult from a StationRecord
+impl GeoPositionFinder {
+    /// Create a new GeoPositionFinder from a StationRecord
     pub fn new(station: StationRecord) -> Self {
         Self {
             station,
@@ -223,14 +223,14 @@ impl GeoPositionSearchResult {
     }
 }
 
-impl From<StationRecord> for GeoPositionSearchResult {
+impl From<StationRecord> for GeoPositionFinder {
     fn from(station: StationRecord) -> Self {
         Self::new(station)
     }
 }
 
-impl From<GeoPositionSearchResult> for StationRecord {
-    fn from(result: GeoPositionSearchResult) -> Self {
+impl From<GeoPositionFinder> for StationRecord {
+    fn from(result: GeoPositionFinder) -> Self {
         result.station
     }
 }
