@@ -82,7 +82,9 @@ impl Search {
         for result in &mut geo_search_results {
             if let (Some(lat), Some(lon)) = (result.station.latitude, result.station.longitude) {
                 // Add a custom field for distance (we'll use this for sorting)
-                result.distance = Some(Self::haversine_distance(latitude, longitude, lat, lon));
+                result.distance = Some(GeoPositionFinder::haversine_distance(
+                    latitude, longitude, lat, lon,
+                ));
             }
         }
 
@@ -145,7 +147,7 @@ impl Search {
         // Calculate scores based on name match and distance
         for result in &mut geo_search_results {
             if let (Some(lat), Some(lon)) = (result.station.latitude, result.station.longitude) {
-                let distance = Self::haversine_distance(latitude, longitude, lat, lon);
+                let distance = GeoPositionFinder::haversine_distance(latitude, longitude, lat, lon);
                 result.distance = Some(distance);
 
                 // Calculate a relevance score (lower is better)
@@ -176,25 +178,6 @@ impl Search {
         // Return the closest 20
         Ok(db_stations.into_iter().take(20).collect())
     }
-
-    /// Calculate haversine distance in kilometers between two points
-    fn haversine_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
-        let earth_radius_km = 6371.0;
-
-        let lat1_rad = lat1 * PI / 180.0;
-        let lon1_rad = lon1 * PI / 180.0;
-        let lat2_rad = lat2 * PI / 180.0;
-        let lon2_rad = lon2 * PI / 180.0;
-
-        let dlat = lat2_rad - lat1_rad;
-        let dlon = lon2_rad - lon1_rad;
-
-        let a = (dlat / 2.0).sin() * (dlat / 2.0).sin()
-            + lat1_rad.cos() * lat2_rad.cos() * (dlon / 2.0).sin() * (dlon / 2.0).sin();
-        let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
-
-        earth_radius_km * c
-    }
 }
 
 // Needed for geo_position searches, where two computed
@@ -220,6 +203,25 @@ impl GeoPositionFinder {
             distance: None,
             relevance_score: None,
         }
+    }
+
+    /// Calculate haversine distance in kilometers between two points
+    pub fn haversine_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
+        let earth_radius_km = 6371.0;
+
+        let lat1_rad = lat1 * PI / 180.0;
+        let lon1_rad = lon1 * PI / 180.0;
+        let lat2_rad = lat2 * PI / 180.0;
+        let lon2_rad = lon2 * PI / 180.0;
+
+        let dlat = lat2_rad - lat1_rad;
+        let dlon = lon2_rad - lon1_rad;
+
+        let a = (dlat / 2.0).sin() * (dlat / 2.0).sin()
+            + lat1_rad.cos() * lat2_rad.cos() * (dlon / 2.0).sin() * (dlon / 2.0).sin();
+        let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
+
+        earth_radius_km * c
     }
 }
 
