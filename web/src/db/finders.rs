@@ -76,31 +76,13 @@ impl Search {
         );
 
         // Fetch candidates
-        let db_stations = query.fetch_all(pool).await?;
-        // Convert to GeoPositionFinder, which includes custom fields for calculating distance
-        let mut geo_search_results: Vec<GeoPositionFinder> =
-            db_stations.into_iter().map(Into::into).collect();
-
-        // Calculate result distances and sort
-        for result in &mut geo_search_results {
-            if let (Some(lat), Some(lon)) = (result.station.latitude, result.station.longitude) {
-                // Add a custom field for distance (we'll use this for sorting)
-                result.distance = Some(GeoPositionFinder::haversine_distance(
-                    latitude, longitude, lat, lon,
-                ));
-            }
-        }
-
-        // Sort by distance
-        geo_search_results.sort_by(|a, b| {
-            a.distance
-                .unwrap_or(f64::MAX)
-                .partial_cmp(&b.distance.unwrap_or(f64::MAX))
-                .unwrap()
+        let mut db_stations = query.fetch_all(pool).await?;
+        db_stations.sort_by_cached_key(|place| {
+            let place_lat = place.latitude.expect("Latitude is not present");
+            let place_lon = place.longitude.expect("Longitude is not present");
+            let distance = haversine_distance(latitude, longitude, place_lat, place_lon);
+            (distance * 10000f64) as i64
         });
-
-        let db_stations: Vec<StationRecord> =
-            geo_search_results.into_iter().map(Into::into).collect();
 
         // Return the closest 20
         Ok(db_stations.into_iter().take(20).collect())
@@ -142,100 +124,39 @@ impl Search {
         );
 
         // Fetch candidates
-        let db_stations = query.fetch_all(pool).await?;
-        // Convert to GeoPositionFinder, which includes custom fields for calculating distance
-        let mut geo_search_results: Vec<GeoPositionFinder> =
-            db_stations.into_iter().map(Into::into).collect();
+        let mut db_stations = query.fetch_all(pool).await?;
+        db_stations.sort_by_cached_key(|place| {
+            let place_lat = place.latitude.expect("Latitude is not present");
+            let place_lon = place.longitude.expect("Longitude is not present");
+            let distance = haversine_distance(latitude, longitude, place_lat, place_lon);
+            let name_score = if place.name.to_lowercase() == name.to_lowercase() {
+                0.0
+            } else {
+                1.0
+            };
 
-        // Calculate scores based on name match and distance
-        for result in &mut geo_search_results {
-            if let (Some(lat), Some(lon)) = (result.station.latitude, result.station.longitude) {
-                let distance = GeoPositionFinder::haversine_distance(latitude, longitude, lat, lon);
-                result.distance = Some(distance);
-
-                // Calculate a relevance score (lower is better)
-                // We weight exact name matches higher than partial matches
-                let name_score = if result.station.name.to_lowercase() == name.to_lowercase() {
-                    0.0
-                } else {
-                    1.0
-                };
-
-                // Combined score (we'll store this temporarily in the distance field)
-                // Lower score = better match
-                result.relevance_score = Some(name_score + (distance / 100.0));
-            }
-        }
-
-        // Sort by combined relevance score
-        geo_search_results.sort_by(|a, b| {
-            a.relevance_score
-                .unwrap_or(f64::MAX)
-                .partial_cmp(&b.relevance_score.unwrap_or(f64::MAX))
-                .unwrap()
+            ((name_score + (distance / 100.0)) * 10000f64) as i64
         });
-
-        let db_stations: Vec<StationRecord> =
-            geo_search_results.into_iter().map(Into::into).collect();
 
         // Return the closest 20
         Ok(db_stations.into_iter().take(20).collect())
     }
 }
 
-// Needed for geo_position searches, where two computed
-// fields are required for sorting by distance:
-// - distance: The distance from the given position.
-// - relevance_score: The relevance score of the station.
-struct GeoPositionFinder {
-    /// The base station record
-    pub station: StationRecord,
+fn haversine_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
+    let earth_radius_km = 6371.0;
 
-    /// Distance from the search point in kilometers
-    pub distance: Option<f64>,
+    let lat1_rad = lat1 * PI / 180.0;
+    let lon1_rad = lon1 * PI / 180.0;
+    let lat2_rad = lat2 * PI / 180.0;
+    let lon2_rad = lon2 * PI / 180.0;
 
-    /// Computed relevance score (lower is better)
-    pub relevance_score: Option<f64>,
-}
+    let dlat = lat2_rad - lat1_rad;
+    let dlon = lon2_rad - lon1_rad;
 
-impl GeoPositionFinder {
-    /// Create a new GeoPositionFinder from a StationRecord
-    pub fn new(station: StationRecord) -> Self {
-        Self {
-            station,
-            distance: None,
-            relevance_score: None,
-        }
-    }
+    let a = (dlat / 2.0).sin() * (dlat / 2.0).sin()
+        + lat1_rad.cos() * lat2_rad.cos() * (dlon / 2.0).sin() * (dlon / 2.0).sin();
+    let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
 
-    /// Calculate haversine distance in kilometers between two points
-    pub fn haversine_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
-        let earth_radius_km = 6371.0;
-
-        let lat1_rad = lat1 * PI / 180.0;
-        let lon1_rad = lon1 * PI / 180.0;
-        let lat2_rad = lat2 * PI / 180.0;
-        let lon2_rad = lon2 * PI / 180.0;
-
-        let dlat = lat2_rad - lat1_rad;
-        let dlon = lon2_rad - lon1_rad;
-
-        let a = (dlat / 2.0).sin() * (dlat / 2.0).sin()
-            + lat1_rad.cos() * lat2_rad.cos() * (dlon / 2.0).sin() * (dlon / 2.0).sin();
-        let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
-
-        earth_radius_km * c
-    }
-}
-
-impl From<StationRecord> for GeoPositionFinder {
-    fn from(station: StationRecord) -> Self {
-        Self::new(station)
-    }
-}
-
-impl From<GeoPositionFinder> for StationRecord {
-    fn from(result: GeoPositionFinder) -> Self {
-        result.station
-    }
+    earth_radius_km * c
 }
