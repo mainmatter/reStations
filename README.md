@@ -13,24 +13,30 @@ New versions of the image are published regularly as the dataset is updated.
 
 ## Endpoints supported
 
-### GET /places`
+### GET /places
+
+Request all places:
 ```
 curl localhost:3000/places
 ```
 
 ### GET /places/{id}
+
+Fetch Lisboa Santa Apolónia station with its UIC:
 ```
-curl localhost:3000/places/8721428 //Lisboa Santa Apolónia
+curl localhost:3000/places/8721428
 ```
 
-### POST /places` (search)
+### POST /places (search)
 
-By name:
+Search stations with `Lisbon` in its name (can be in English or Portuguese, or other languages*) :
 ```
 curl -X POST -H "Content-Type: application/json" \
 -d '{"placeInput": {"name": "Lisbon"}}' \
 localhost:3000/places
 ```
+* see the complete set of languages supported [here](https://github.com/trainline-eu/stations/blob/master/src/main/resources/languages.json).
+
 By geo position:
 ```
 curl -X POST -H "Content-Type: application/json" \
