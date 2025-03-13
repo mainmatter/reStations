@@ -69,15 +69,16 @@ async fn test_search_other_languages(context: &TestContext) {
 #[test]
 async fn test_search_geo_position(context: &TestContext) {
     // Palermo Centrale
-    let payload = json!(OsdmPlaceRequest {
-        place_input: Some(OsdmInitialPlaceInput {
-            name: None,
-            geo_position: Some(OsdmGeoPosition {
-                latitude: 38.109417,
-                longitude: 13.367472,
-            })
-        }),
-    });
+    let payload = r#"
+        {
+            "placeInput": {
+                "geoPosition": {
+                    "latitude": 38.109417,
+                    "longitude": 13.367472
+                }
+            }
+        }
+    "#;
     let response = context
         .app
         .request("/places")
