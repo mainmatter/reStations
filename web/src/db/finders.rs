@@ -49,6 +49,9 @@ impl Search {
         println!("Searching stations by position");
         // First, get a larger set of candidates using a bounding box
         // This is more efficient for the initial filtering
+        //
+        // TODO: extract into a constant that is visible
+        // and perhaps configurable as an env var
         let approx_distance_deg = 1.0; // Roughly 100km at equator
 
         let query = sqlx::query_as!(
