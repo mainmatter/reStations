@@ -13,25 +13,42 @@ New versions of the image are published regularly as the dataset is updated.
 
 ## Endpoints supported
 
-* `GET /places`
-* `GET /places/{id}`
-* `POST /places` (search)
+### GET /places
 
-Curl examples
-
+Request all places:
 ```
 curl localhost:3000/places
-curl localhost:3000/places/8721428 //Lisboa Santa Apolónia
+```
+
+### GET /places/{id}
+
+Fetch Lisboa Santa Apolónia station with its UIC:
+```
+curl localhost:3000/places/8721428
+```
+
+### POST /places (search)
+
+Search stations with `Lisbon` in its name (can be in English or Portuguese, or other languages*) :
+```
 curl -X POST -H "Content-Type: application/json" \
 -d '{"placeInput": {"name": "Lisbon"}}' \
 localhost:3000/places
 ```
+* see the complete set of languages supported [here](https://github.com/trainline-eu/stations/blob/master/src/main/resources/languages.json).
 
-(`geoPosition` and `restrictions` request fields support coming soon for POST /places)
+By geo position:
+```
+curl -X POST -H "Content-Type: application/json" \
+-d '{"placeInput": {"geoPosition": {"latitude": 38.109417, "longitude": 13.367472}}}' \
+localhost:3000/places
+```
+
+(`restrictions` request fields support coming soon for POST /places)
 
 ## Working with reStations
 
-reStations can also be used directly as a Rust project. To run the project, import the data into a local SQLite database first:
+`reStations` can also be used directly as a Rust project. To run the project, import the data into a local SQLite database first:
 
 ```
 ./scripts/sync-data

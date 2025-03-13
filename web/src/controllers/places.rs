@@ -143,6 +143,7 @@ pub async fn search(
                 (Some(name), None) => Search::by_name(&app_state.pool, &name).await,
                 // Search by position only
                 (None, Some(position)) => {
+                    // TODO handle missing coordinates
                     Search::by_position(&app_state.pool, position.latitude, position.longitude)
                         .await
                 }
