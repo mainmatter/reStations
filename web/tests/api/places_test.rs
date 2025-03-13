@@ -68,13 +68,13 @@ async fn test_search_other_languages(context: &TestContext) {
 
 #[test]
 async fn test_search_geo_position(context: &TestContext) {
-    // Palermo Centrale
+    // London Charing Cross
     let payload = r#"
         {
             "placeInput": {
                 "geoPosition": {
-                    "latitude": 38.109417,
-                    "longitude": 13.367472
+                    "latitude": 51.508362,
+                    "longitude": -0.123835
                 }
             }
         }
@@ -93,9 +93,13 @@ async fn test_search_geo_position(context: &TestContext) {
 
     // 20 is the limit on the results
     assert_that!(api_place.places.len(), eq(20));
-}
 
-// TODO test that Palermo Centrale is the first result
+    let first = &api_place.places[0];
+    assert_that!(first.name, eq("London Charing Cross"));
+
+    let second = &api_place.places[1];
+    assert_that!(second.name, eq("London Waterloo"));
+}
 
 // TODO test when either lat or lon is missing
 
