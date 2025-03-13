@@ -13,25 +13,36 @@ New versions of the image are published regularly as the dataset is updated.
 
 ## Endpoints supported
 
-* `GET /places`
-* `GET /places/{id}`
-* `POST /places` (search)
-
-Curl examples
-
+### GET /places`
 ```
 curl localhost:3000/places
+```
+
+### GET /places/{id}
+```
 curl localhost:3000/places/8721428 //Lisboa Santa Apolónia
+```
+
+### POST /places` (search)
+
+By name:
+```
 curl -X POST -H "Content-Type: application/json" \
 -d '{"placeInput": {"name": "Lisbon"}}' \
 localhost:3000/places
 ```
+By geo position:
+```
+curl -X POST -H "Content-Type: application/json" \
+-d '{"placeInput": {"geoPosition": {"latitude": 38.109417, "longitude": 13.367472}}}' \
+localhost:3000/places
+```
 
-(`geoPosition` and `restrictions` request fields support coming soon for POST /places)
+(`restrictions` request fields support coming soon for POST /places)
 
 ## Working with reStations
 
-reStations can also be used directly as a Rust project. To run the project, import the data into a local SQLite database first:
+`reStations` can also be used directly as a Rust project. To run the project, import the data into a local SQLite database first:
 
 ```
 ./scripts/sync-data
