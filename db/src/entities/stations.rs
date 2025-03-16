@@ -3,6 +3,7 @@ use fake::{faker::name::en::*, Dummy};
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::Sqlite;
+use std::f64::consts::PI;
 use validator::Validate;
 
 #[derive(Serialize, Debug, Deserialize)]
@@ -87,4 +88,135 @@ pub async fn load(
         Some(station) => Ok(station),
         None => Err(crate::Error::NoRecordFound),
     }
+}
+
+pub async fn search_by_name(
+    name: &str,
+    executor: impl sqlx::Executor<'_, Database = Sqlite>,
+) -> Result<Vec<Station>, crate::Error> {
+    let pattern = format!("%{}%", name);
+    let stations = sqlx::query_as!(Station, "SELECT id, name, uic, latitude, longitude, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh from stations  WHERE uic IS NOT NULL AND (name like $1 OR info_de like $1 OR info_en like $1 OR info_es like $1 OR info_fr like $1 OR info_it like $1 OR info_nb like $1 OR info_nl like $1 OR info_cs like $1 OR info_da like $1 OR info_hu like $1 OR info_ja like $1 OR info_ko like $1 OR info_pl like $1 OR info_pt like $1 OR info_ru like $1 OR info_sv like $1 OR info_tr like $1 OR info_zh like $1)", pattern)
+          .fetch_all(executor)
+          .await?;
+    Ok(stations)
+}
+
+pub async fn search_by_position(
+    latitude: f64,
+    longitude: f64,
+    executor: impl sqlx::Executor<'_, Database = Sqlite>,
+) -> Result<Vec<Station>, crate::Error> {
+    // First, get a larger set of candidates using a bounding box
+    // This is more efficient for the initial filtering
+    //
+    // TODO: extract into a constant that is visible
+    // and perhaps configurable as an env var
+    let approx_distance_deg = 1.0; // Roughly 100km at equator
+
+    let mut stations = sqlx::query_as!(
+        Station,
+        r#"
+        SELECT *
+        FROM stations
+        WHERE
+            latitude IS NOT NULL
+            AND longitude IS NOT NULL
+            AND latitude BETWEEN ? - ? AND ? + ?
+            AND longitude BETWEEN ? - ? AND ? + ?
+        "#,
+        latitude,
+        approx_distance_deg,
+        latitude,
+        approx_distance_deg,
+        longitude,
+        approx_distance_deg,
+        longitude,
+        approx_distance_deg
+    )
+    .fetch_all(executor)
+    .await?;
+
+    stations.sort_by_cached_key(|place| {
+        let place_lat = place.latitude.expect("Latitude is not present");
+        let place_lon = place.longitude.expect("Longitude is not present");
+        let distance = haversine_distance(latitude, longitude, place_lat, place_lon);
+        (distance * 10000f64) as i64
+    });
+
+    // Return the closest 20
+    Ok(stations.into_iter().take(20).collect())
+}
+
+pub async fn search_by_name_and_position(
+    name: &str,
+    latitude: f64,
+    longitude: f64,
+    executor: impl sqlx::Executor<'_, Database = Sqlite>,
+) -> Result<Vec<Station>, crate::Error> {
+    // First, get a larger set of candidates using a bounding box
+    // This is more efficient for the initial filtering
+    //
+    // TODO: extract into a constant that is visible
+    // and perhaps configurable as an env var
+    let approx_distance_deg = 1.0; // Roughly 100km at equator
+
+    let name_pattern = format!("%{}%", name.to_lowercase());
+    let mut stations = sqlx::query_as!(
+        Station,
+        r#"
+        SELECT *
+        FROM stations
+        WHERE
+            lower(name) LIKE ?
+            AND latitude IS NOT NULL
+            AND longitude IS NOT NULL
+            AND latitude BETWEEN ? - ? AND ? + ?
+            AND longitude BETWEEN ? - ? AND ? + ?
+        "#,
+        name_pattern,
+        latitude,
+        approx_distance_deg,
+        latitude,
+        approx_distance_deg,
+        longitude,
+        approx_distance_deg,
+        longitude,
+        approx_distance_deg
+    )
+    .fetch_all(executor)
+    .await?;
+
+    stations.sort_by_cached_key(|place| {
+        let place_lat = place.latitude.expect("Latitude is not present");
+        let place_lon = place.longitude.expect("Longitude is not present");
+        let distance = haversine_distance(latitude, longitude, place_lat, place_lon);
+        let name_score = if place.name.to_lowercase() == name.to_lowercase() {
+            0.0
+        } else {
+            1.0
+        };
+
+        ((name_score + (distance / 100.0)) * 10000f64) as i64
+    });
+
+    // Return the closest 20
+    Ok(stations.into_iter().take(20).collect())
+}
+
+fn haversine_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
+    let earth_radius_km = 6371.0;
+
+    let lat1_rad = lat1 * PI / 180.0;
+    let lon1_rad = lon1 * PI / 180.0;
+    let lat2_rad = lat2 * PI / 180.0;
+    let lon2_rad = lon2 * PI / 180.0;
+
+    let dlat = lat2_rad - lat1_rad;
+    let dlon = lon2_rad - lon1_rad;
+
+    let a = (dlat / 2.0).sin() * (dlat / 2.0).sin()
+        + lat1_rad.cos() * lat2_rad.cos() * (dlon / 2.0).sin() * (dlon / 2.0).sin();
+    let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
+
+    earth_radius_km * c
 }

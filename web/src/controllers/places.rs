@@ -163,27 +163,31 @@ pub async fn search(
             match (input.name, input.geo_position) {
                 // Search by name and position
                 (Some(name), Some(position)) => {
-                    Search::by_name_and_position(
-                        &app_state.pool,
+                    stations::search_by_name_and_position(
                         &name,
                         position.latitude,
                         position.longitude,
+                        &app_state.pool,
                     )
                     .await
                 }
                 // Search by name only
-                (Some(name), None) => Search::by_name(&app_state.pool, &name).await,
+                (Some(name), None) => stations::search_by_name(&name, &app_state.pool).await,
                 // Search by position only
                 (None, Some(position)) => {
                     // TODO handle missing coordinates
-                    Search::by_position(&app_state.pool, position.latitude, position.longitude)
-                        .await
+                    stations::search_by_position(
+                        position.latitude,
+                        position.longitude,
+                        &app_state.pool,
+                    )
+                    .await
                 }
                 // No search criteria, return all
-                (None, None) => Search::all(&app_state.pool).await,
+                (None, None) => stations::load_all(&app_state.pool).await,
             }
         }
-        None => Search::all(&app_state.pool).await,
+        None => stations::load_all(&app_state.pool).await,
     };
 
     let places = query.expect("Unexpected error at places::search");
