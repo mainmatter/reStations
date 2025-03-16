@@ -1,0 +1,30 @@
+[package]
+name = "restations-db"
+version = "0.0.1"
+edition = "2021"
+publish = false
+
+[lib]
+# examples in docs don't run without a running database, etc.
+doctest = false
+
+[features]
+test-helpers = ["dep:fake", "dep:rand", "dep:regex"]
+
+[dependencies]
+anyhow = "1.0"
+fake = { version = "4.0", features = ["derive"], optional = true }
+restations-config = { path = "../config" }
+rand = { version = "0.8", optional = true }
+regex = { version = "1.10", optional = true }
+serde = { version = "1.0", features = ["derive"] }
+sqlx = { version = "0.8", features = [
+    "sqlite",
+    "runtime-tokio",
+    "tls-rustls",
+    "macros",
+    "migrate",
+    "chrono",
+] }
+thiserror = "2.0"
+validator = { version = "0.20", features = ["derive"] }
