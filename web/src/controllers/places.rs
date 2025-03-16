@@ -5,6 +5,7 @@ use crate::state::SharedAppState;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Json, Response};
+use restations_db::entities::stations;
 use serde::{Deserialize, Serialize};
 use std::convert::From;
 
@@ -110,11 +111,40 @@ impl From<Vec<StationRecord>> for OsdmPlaceResponse {
     }
 }
 
+impl From<stations::Station> for OsdmPlace {
+    fn from(station: stations::Station) -> Self {
+        let geo_position = match (station.latitude, station.longitude) {
+            (Some(latitude), Some(longitude)) => Some(OsdmGeoPosition {
+                latitude,
+                longitude,
+            }),
+            _ => None,
+        };
+
+        OsdmPlace {
+            id: format!("urn:uic:stn:{}", station.uic),
+            object_type: "StopPlace".into(),
+            name: station.name,
+            alternative_ids: vec![],
+            geo_position,
+            _links: vec![],
+        }
+    }
+}
+
+impl From<Vec<stations::Station>> for OsdmPlaceResponse {
+    fn from(stations: Vec<stations::Station>) -> Self {
+        OsdmPlaceResponse {
+            places: stations.into_iter().map(|station| station.into()).collect(),
+        }
+    }
+}
+
 // Endpoint handlers
 //
 #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
-    let places = Search::all(&app_state.pool)
+    let places = stations::load_all(&app_state.pool)
         .await
         .expect("Unexpected error at places::list");
 

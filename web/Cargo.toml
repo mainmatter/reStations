@@ -20,6 +20,7 @@ test-helpers = [
 anyhow = "1.0"
 axum = { version = "0.8.1", features = ["macros"] }
 restations-config = { path = "../config" }
+restations-db = { path = "../db" }
 serde = { version = "1.0", features = ["derive"] }
 sqlx = { version = "0.8", features = [
     "sqlite",
