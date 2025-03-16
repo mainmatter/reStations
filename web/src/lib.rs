@@ -15,6 +15,8 @@ pub mod db;
 pub mod error;
 /// Middlewares that incoming requests are passed through before being passed to [`controllers`].
 pub mod middlewares;
+/// Contains OSDM-specific datatypes for responses and requests.
+pub mod osdm;
 /// Contains the application's route definitions.
 pub mod routes;
 /// Contains the application state definition and functionality to initialize it.

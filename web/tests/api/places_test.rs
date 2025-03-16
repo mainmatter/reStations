@@ -4,7 +4,9 @@ use axum::{
 };
 use googletest::prelude::{assert_that, eq, gt};
 use restations_macros::test;
-use restations_web::controllers::places::*;
+use restations_web::osdm::{
+    OsdmGeoPosition, OsdmInitialPlaceInput, OsdmPlaceRequest, OsdmPlaceResponse, OsdmProblem,
+};
 use restations_web::test_helpers::{BodyExt, RouterExt, TestContext};
 use serde_json::json;
 
@@ -184,5 +186,5 @@ async fn test_show_not_found(context: &TestContext) {
     let problem: OsdmProblem = response.into_body().into_json::<OsdmProblem>().await;
 
     assert_that!(problem.code, eq("not-found"));
-    assert_that!(problem.title, eq("Could not find place with id #1"));
+    assert_that!(problem.title, eq("Could not find place!"));
 }

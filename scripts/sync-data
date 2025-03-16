@@ -99,7 +99,6 @@ ALTER TABLE stations DROP COLUMN is_city;
 ALTER TABLE stations DROP COLUMN is_main_station;
 ALTER TABLE stations DROP COLUMN is_airport;
 ALTER TABLE stations DROP COLUMN is_suggestable;
-ALTER TABLE stations DROP COLUMN country_hint;
 ALTER TABLE stations DROP COLUMN main_station_hint;
 ALTER TABLE stations DROP COLUMN sncf_id;
 ALTER TABLE stations DROP COLUMN sncf_tvs_id;
