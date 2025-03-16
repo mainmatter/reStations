@@ -12,7 +12,7 @@ doctest = false
 anyhow = "1"
 dotenvy = "0.15"
 figment = { version = "0.10", features = ["toml", "env"] }
-serde = { version = "1.0", features = ["derive"] } 
+serde = { version = "1.0", features = ["derive"] }
 tracing = "0.1"
 
 [dev-dependencies]

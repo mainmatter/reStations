@@ -14,13 +14,15 @@ use tracing::info;
 
 /// The application configuration.
 ///
-/// This struct is the central point for the entire application configuration. It holds the [`ServerConfig`] and can be extended with any application-specific configuration settings that will be read from the main `app.toml` and the environment-specific configuration files.
+/// This struct is the central point for the entire application configuration. It holds the [`ServerConfig`] as well as [`DatabaseConfig`]and can be extended with any application-specific configuration settings that will be read from the main `app.toml` and the environment-specific configuration files.
 ///
 /// For any setting that appears in both the `app.toml` and the environment-specific file, the latter will override the former so that default settings can be kept in `app.toml` that are overridden per environment if necessary.
 #[derive(Deserialize, Clone, Debug)]
 pub struct Config {
     /// the server configuration: [`ServerConfig`]
     pub server: ServerConfig,
+    /// the database configuration: [`DatabaseConfig`]
+    pub database: DatabaseConfig,
     // add your config settings here…
 }
 
@@ -71,6 +73,28 @@ impl ServerConfig {
     pub fn addr(&self) -> SocketAddr {
         SocketAddr::new(self.ip, self.port)
     }
+}
+
+/// The database configuration.
+///
+/// This struct keeps all settings specific to the database – currently that is the database URL to use to connect to the database
+/// but more might be added in the future. The struct is provided pre-defined by Gerust and cannot be changed. It
+/// **must** be used for the `database` field in the application-specific [`Config`] struct:
+///
+/// ```rust
+/// #[derive(Deserialize, Clone, Debug)]
+/// pub struct Config {
+///     #[serde(default)]
+///     pub server: ServerConfig,
+///     pub database: DatabaseConfig,
+///     // add your config settings here…
+/// }
+/// ```
+#[derive(Deserialize, Clone, Debug)]
+#[cfg_attr(test, derive(PartialEq))]
+pub struct DatabaseConfig {
+    /// The URL to use to connect to the database, e.g. "postgresql://user:password@localhost:5432/database"
+    pub url: String,
 }
 
 /// Loads the application configuration for a particular environment.
@@ -197,6 +221,7 @@ mod tests {
     #[derive(Deserialize, PartialEq, Debug)]
     pub struct Config {
         pub server: ServerConfig,
+        pub database: DatabaseConfig,
 
         pub app_setting: String,
     }
@@ -221,7 +246,10 @@ mod tests {
 
             jail.set_env("APP_SERVER__IP", "127.0.0.1");
             jail.set_env("APP_SERVER__PORT", "3000");
-
+            jail.set_env(
+                "APP_DATABASE__URL",
+                "postgresql://user:pass@localhost:5432/restations",
+            );
             let config = load_config::<Config>(&Environment::Development).unwrap();
 
             assert_that!(
@@ -231,7 +259,9 @@ mod tests {
                         ip: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
                         port: 3000,
                     },
-
+                    database: DatabaseConfig {
+                        url: String::from("postgresql://user:pass@localhost:5432/restations"),
+                    },
                     app_setting: String::from("override!"),
                 })
             );
@@ -260,7 +290,10 @@ mod tests {
 
             jail.set_env("APP_SERVER__IP", "127.0.0.1");
             jail.set_env("APP_SERVER__PORT", "3000");
-
+            jail.set_env(
+                "APP_DATABASE__URL",
+                "postgresql://user:pass@localhost:5432/restations",
+            );
             let config = load_config::<Config>(&Environment::Test).unwrap();
 
             assert_that!(
@@ -270,7 +303,9 @@ mod tests {
                         ip: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
                         port: 3000,
                     },
-
+                    database: DatabaseConfig {
+                        url: String::from("postgresql://user:pass@localhost:5432/restations"),
+                    },
                     app_setting: String::from("override!"),
                 })
             );
@@ -299,7 +334,10 @@ mod tests {
 
             jail.set_env("APP_SERVER__IP", "127.0.0.1");
             jail.set_env("APP_SERVER__PORT", "3000");
-
+            jail.set_env(
+                "APP_DATABASE__URL",
+                "postgresql://user:pass@localhost:5432/restations",
+            );
             let config = load_config::<Config>(&Environment::Production).unwrap();
 
             assert_that!(
@@ -309,7 +347,9 @@ mod tests {
                         ip: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
                         port: 3000,
                     },
-
+                    database: DatabaseConfig {
+                        url: String::from("postgresql://user:pass@localhost:5432/restations"),
+                    },
                     app_setting: String::from("override!"),
                 })
             );
