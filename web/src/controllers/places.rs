@@ -140,10 +140,7 @@ pub async fn search(
     let maybe_restrictions = place_req.restrictions;
 
     let limit = match maybe_restrictions {
-        Some(restrictions) => match restrictions.number_of_results {
-            Some(number_of_results) => number_of_results,
-            None => 20,
-        },
+        Some(restrictions) => restrictions.number_of_results.unwrap_or(20),
         None => 20,
     };
 
