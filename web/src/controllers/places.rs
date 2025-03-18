@@ -45,10 +45,18 @@ pub struct OsdmInitialPlaceInput {
     pub geo_position: Option<OsdmGeoPosition>,
 }
 
+// Define the restrictions structure according to the spec
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OsdmPlaceRestrictions {
+    pub number_of_results: Option<i32>,
+}
+
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OsdmPlaceRequest {
     pub place_input: Option<OsdmInitialPlaceInput>,
+    pub restrictions: Option<OsdmPlaceRestrictions>,
 }
 
 //
@@ -114,7 +122,10 @@ impl From<Vec<StationRecord>> for OsdmPlaceResponse {
 //
 #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
-    let places = Search::all(&app_state.pool)
+    // This is temporary, as the changes to the db crate will replace this
+    // with an entity search
+    let limit = 10000;
+    let places = Search::all(&app_state.pool, limit)
         .await
         .expect("Unexpected error at places::list");
 
@@ -126,6 +137,15 @@ pub async fn search(
     Json(place_req): Json<OsdmPlaceRequest>,
 ) -> PlacesResponse {
     let maybe_place_input = place_req.place_input;
+    let maybe_restrictions = place_req.restrictions;
+
+    let limit = match maybe_restrictions {
+        Some(restrictions) => match restrictions.number_of_results {
+            Some(number_of_results) => number_of_results,
+            None => 20,
+        },
+        None => 20,
+    };
 
     // TODO improve input handling
     let query = match maybe_place_input {
@@ -138,22 +158,28 @@ pub async fn search(
                         &name,
                         position.latitude,
                         position.longitude,
+                        limit,
                     )
                     .await
                 }
                 // Search by name only
-                (Some(name), None) => Search::by_name(&app_state.pool, &name).await,
+                (Some(name), None) => Search::by_name(&app_state.pool, &name, limit).await,
                 // Search by position only
                 (None, Some(position)) => {
                     // TODO handle missing coordinates
-                    Search::by_position(&app_state.pool, position.latitude, position.longitude)
-                        .await
+                    Search::by_position(
+                        &app_state.pool,
+                        position.latitude,
+                        position.longitude,
+                        limit,
+                    )
+                    .await
                 }
                 // No search criteria, return all
-                (None, None) => Search::all(&app_state.pool).await,
+                (None, None) => Search::all(&app_state.pool, limit).await,
             }
         }
-        None => Search::all(&app_state.pool).await,
+        None => Search::all(&app_state.pool, limit).await,
     };
 
     let places = query.expect("Unexpected error at places::search");

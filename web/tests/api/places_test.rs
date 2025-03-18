@@ -27,6 +27,9 @@ async fn test_search_ok(context: &TestContext) {
             name: Some(String::from("Berlin")),
             geo_position: None,
         }),
+        restrictions: Some(OsdmPlaceRestrictions {
+            number_of_results: Some(1),
+        }),
     });
     let response = context
         .app
@@ -40,7 +43,7 @@ async fn test_search_ok(context: &TestContext) {
 
     let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), gt(1));
+    assert_that!(api_place.places.len(), eq(1));
 }
 
 #[test]
@@ -49,7 +52,10 @@ async fn test_search_other_languages(context: &TestContext) {
         place_input: Some(OsdmInitialPlaceInput {
             name: Some(String::from("Seville")),
             geo_position: None,
-        })
+        }),
+        restrictions: Some(OsdmPlaceRestrictions {
+            number_of_results: Some(1),
+        }),
     });
     let response = context
         .app
@@ -63,7 +69,7 @@ async fn test_search_other_languages(context: &TestContext) {
 
     let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), gt(1));
+    assert_that!(api_place.places.len(), eq(1));
 }
 
 #[test]
@@ -151,7 +157,7 @@ async fn test_search_missing_parameters(context: &TestContext) {
 
     let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), gt(1000));
+    assert_that!(api_place.places.len(), eq(20));
 }
 
 // GET /places/{id}
