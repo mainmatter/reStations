@@ -205,17 +205,20 @@ mod tests {
 
         let place = OsdmPlace::from(record);
 
-        assert_eq!(place, OsdmPlace {
-            id: String::from("urn:uic:stn:7051430"),
-            object_type: String::from("StopPlace"),
-            name: String::from("London Charing Cross"),
-            geo_position: Some(OsdmGeoPosition {
-                latitude: 51.508362,
-                longitude: -0.123835,
-            }),
-            country_code: Some(String::from("GB")),
-            alternative_ids: vec![],
-            _links: Vec::<OsdmLink>::new(),
-        });
+        assert_eq!(
+            place,
+            OsdmPlace {
+                id: String::from("urn:uic:stn:7051430"),
+                object_type: String::from("StopPlace"),
+                name: String::from("London Charing Cross"),
+                geo_position: Some(OsdmGeoPosition {
+                    latitude: 51.508362,
+                    longitude: -0.123835,
+                }),
+                country_code: Some(String::from("GB")),
+                alternative_ids: vec![],
+                _links: Vec::<OsdmLink>::new(),
+            }
+        );
     }
 }
