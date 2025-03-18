@@ -9,6 +9,7 @@ pub struct StationRecord {
     pub uic: String,
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
+    pub country: Option<String>,
     pub info_de: Option<String>,
     pub info_en: Option<String>,
     pub info_es: Option<String>,

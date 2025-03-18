@@ -94,7 +94,6 @@ DELETE FROM stations WHERE uic = "";
 ALTER TABLE stations DROP COLUMN slug;
 ALTER TABLE stations DROP COLUMN uic8_sncf;
 ALTER TABLE stations DROP COLUMN parent_station_id;
-ALTER TABLE stations DROP COLUMN country;
 ALTER TABLE stations DROP COLUMN time_zone;
 ALTER TABLE stations DROP COLUMN is_city;
 ALTER TABLE stations DROP COLUMN is_main_station;
