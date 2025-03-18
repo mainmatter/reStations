@@ -30,6 +30,7 @@ pub struct OsdmPlace {
     pub name: String,
     pub alternative_ids: Vec<String>,
     pub geo_position: Option<OsdmGeoPosition>,
+    pub country_code: Option<String>,
     pub _links: Vec<OsdmLink>,
 }
 
@@ -95,6 +96,7 @@ impl From<StationRecord> for OsdmPlace {
             name: station.name,
             alternative_ids: vec![],
             geo_position,
+            country_code: station.country,
             _links: vec![],
         }
     }
@@ -197,6 +199,7 @@ mod tests {
             name: String::from("London Charing Cross"),
             latitude: Some(51.508362),
             longitude: Some(-0.123835),
+            country: Some(String::from("GB")),
             ..StationRecord::default()
         };
 
@@ -210,6 +213,7 @@ mod tests {
                 latitude: 51.508362,
                 longitude: -0.123835,
             }),
+            country_code: Some(String::from("GB")),
             alternative_ids: vec![],
             _links: Vec::<OsdmLink>::new(),
         });
