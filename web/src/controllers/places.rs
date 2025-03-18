@@ -14,7 +14,7 @@ pub struct OsdmGeoPosition {
     pub longitude: f64,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug, PartialEq)]
 pub struct OsdmLink {
     rel: String,
     href: String,
@@ -22,7 +22,7 @@ pub struct OsdmLink {
     value: String,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct OsdmPlace {
     pub id: String,
@@ -183,4 +183,35 @@ fn render_not_found(place_id: String) -> PlacesResponse {
         title: format!("Could not find place with id #{}", place_id),
     };
     PlacesResponse::NotFound(api_problem)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_station_record_to_osdm_place() {
+        let record = StationRecord {
+            id: 8260,
+            uic: String::from("7051430"),
+            name: String::from("London Charing Cross"),
+            latitude: Some(51.508362),
+            longitude: Some(-0.123835),
+            ..StationRecord::default()
+        };
+
+        let place = OsdmPlace::from(record);
+
+        assert_eq!(place, OsdmPlace {
+            id: String::from("urn:uic:stn:7051430"),
+            object_type: String::from("StopPlace"),
+            name: String::from("London Charing Cross"),
+            geo_position: Some(OsdmGeoPosition {
+                latitude: 51.508362,
+                longitude: -0.123835,
+            }),
+            alternative_ids: vec![],
+            _links: Vec::<OsdmLink>::new(),
+        });
+    }
 }
