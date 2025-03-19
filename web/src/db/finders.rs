@@ -9,13 +9,15 @@ impl Search {
     pub async fn all(db: &DbPool, limit: i32) -> Result<Vec<StationRecord>, DbError> {
         let stations = sqlx::query_as!(
             StationRecord,
-            "SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh FROM stations WHERE uic IS NOT NULL LIMIT ?",
-            limit
-       )
-       .fetch_all(db)
-       .await?;
+            "SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh FROM stations WHERE uic IS NOT NULL",
+        )
+        .fetch_all(db)
+        .await?;
 
-        Ok(stations)
+        Ok(stations
+            .into_iter()
+            .take(limit.try_into().unwrap())
+            .collect())
     }
 
     pub async fn by_name(
@@ -26,9 +28,8 @@ impl Search {
         let pattern = format!("%{}%", name);
         let stations = sqlx::query_as!(
             StationRecord,
-            "SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh FROM stations WHERE uic IS NOT NULL AND (name like $1 OR info_de like $1 OR info_en like $1 OR info_es like $1 OR info_fr like $1 OR info_it like $1 OR info_nb like $1 OR info_nl like $1 OR info_cs like $1 OR info_da like $1 OR info_hu like $1 OR info_ja like $1 OR info_ko like $1 OR info_pl like $1 OR info_pt like $1 OR info_ru like $1 OR info_sv like $1 OR info_tr like $1 OR info_zh like $1) LIMIT $2",
-            pattern,
-            limit
+            "SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh FROM stations WHERE uic IS NOT NULL AND (name like $1 OR info_de like $1 OR info_en like $1 OR info_es like $1 OR info_fr like $1 OR info_it like $1 OR info_nb like $1 OR info_nl like $1 OR info_cs like $1 OR info_da like $1 OR info_hu like $1 OR info_ja like $1 OR info_ko like $1 OR info_pl like $1 OR info_pt like $1 OR info_ru like $1 OR info_sv like $1 OR info_tr like $1 OR info_zh like $1)",
+            pattern
         )
         .fetch_all(db)
         .await?;
@@ -74,7 +75,6 @@ impl Search {
                 AND longitude IS NOT NULL
                 AND latitude BETWEEN ? - ? AND ? + ?
                 AND longitude BETWEEN ? - ? AND ? + ?
-            LIMIT ?
             "#,
             latitude,
             approx_distance_deg,
@@ -83,8 +83,7 @@ impl Search {
             longitude,
             approx_distance_deg,
             longitude,
-            approx_distance_deg,
-            limit
+            approx_distance_deg
         );
 
         // Fetch candidates
@@ -96,7 +95,10 @@ impl Search {
             (distance * 10000f64) as i64
         });
 
-        Ok(stations)
+        Ok(stations
+            .into_iter()
+            .take(limit.try_into().unwrap())
+            .collect())
     }
 
     /// Search for stations by name and proximity to geographic coordinates
@@ -122,7 +124,6 @@ impl Search {
                 AND longitude IS NOT NULL
                 AND latitude BETWEEN ? - ? AND ? + ?
                 AND longitude BETWEEN ? - ? AND ? + ?
-            LIMIT ?
             "#,
             name_pattern,
             latitude,
@@ -132,8 +133,7 @@ impl Search {
             longitude,
             approx_distance_deg,
             longitude,
-            approx_distance_deg,
-            limit
+            approx_distance_deg
         );
 
         // Fetch candidates
@@ -151,7 +151,10 @@ impl Search {
             ((name_score + (distance / 100.0)) * 10000f64) as i64
         });
 
-        Ok(stations)
+        Ok(stations
+            .into_iter()
+            .take(limit.try_into().unwrap())
+            .collect())
     }
 }
 
