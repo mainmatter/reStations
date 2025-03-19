@@ -8,6 +8,9 @@ use axum::response::{IntoResponse, Json, Response};
 use serde::{Deserialize, Serialize};
 use std::convert::From;
 
+// TODO perhaps make this configurable through an environment variable?
+pub const DEFAULT_NUMBER_OF_RESULTS: i32 = 20;
+
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct OsdmGeoPosition {
     pub latitude: f64,
@@ -122,9 +125,10 @@ impl From<Vec<StationRecord>> for OsdmPlaceResponse {
 //
 #[axum::debug_handler]
 pub async fn list(State(app_state): State<SharedAppState>) -> PlacesResponse {
-    // This is temporary, as the changes to the db crate will replace this
-    // with an entity search
-    let limit = 10000;
+    // This is temporary. The changes to the db crate on #77 will replace this
+    // with an entity search that will fetch all records
+    // Search::all is also used as fallback in search(), when no input is provided
+    let limit = 100000;
     let places = Search::all(&app_state.pool, limit)
         .await
         .expect("Unexpected error at places::list");
@@ -140,8 +144,10 @@ pub async fn search(
     let maybe_restrictions = place_req.restrictions;
 
     let limit = match maybe_restrictions {
-        Some(restrictions) => restrictions.number_of_results.unwrap_or(20),
-        None => 100,
+        Some(restrictions) => restrictions
+            .number_of_results
+            .unwrap_or(DEFAULT_NUMBER_OF_RESULTS),
+        None => DEFAULT_NUMBER_OF_RESULTS,
     };
 
     // TODO improve input handling

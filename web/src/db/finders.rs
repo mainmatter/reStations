@@ -3,6 +3,10 @@ use crate::db::pool::DbPool;
 use crate::db::station_record::StationRecord;
 use std::f64::consts::PI;
 
+// Approximate distance measured in degrees of latitude/longitude.
+// This value is used to create a geographic bounding box around a specified point.
+pub const APPROXIMATE_DISTANCE: f32 = 1.0; // Roughly 100km at equator
+
 pub struct Search;
 
 impl Search {
@@ -34,7 +38,10 @@ impl Search {
         .fetch_all(db)
         .await?;
 
-        Ok(stations)
+        Ok(stations
+            .into_iter()
+            .take(limit.try_into().unwrap())
+            .collect())
     }
 
     pub async fn by_place_id(db: &DbPool, place_id: &String) -> Result<StationRecord, DbError> {
@@ -60,10 +67,7 @@ impl Search {
     ) -> Result<Vec<StationRecord>, DbError> {
         // First, get a larger set of candidates using a bounding box
         // This is more efficient for the initial filtering
-        //
-        // TODO: extract into a constant that is visible
-        // and perhaps configurable as an env var
-        let approx_distance_deg = 1.0; // Roughly 100km at equator
+        let approx_distance_deg = APPROXIMATE_DISTANCE;
 
         let query = sqlx::query_as!(
             StationRecord,
@@ -110,7 +114,7 @@ impl Search {
         limit: i32,
     ) -> Result<Vec<StationRecord>, DbError> {
         // First, get stations matching name within a bounding box
-        let approx_distance_deg = 1.0; // Roughly 100km at equator
+        let approx_distance_deg = APPROXIMATE_DISTANCE;
 
         let name_pattern = format!("%{}%", name.to_lowercase());
         let query = sqlx::query_as!(
