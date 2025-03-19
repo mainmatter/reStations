@@ -15,9 +15,9 @@ async fn test_list_ok(context: &TestContext) {
     let response = context.app.request("/places").send().await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let places_response: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), gt(1));
+    assert_that!(places_response.places.len(), gt(1));
 }
 
 #[test]
@@ -41,9 +41,9 @@ async fn test_search_ok(context: &TestContext) {
         .await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let places_response: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), eq(1));
+    assert_that!(places_response.places.len(), eq(1));
 }
 
 #[test]
@@ -67,9 +67,9 @@ async fn test_search_other_languages(context: &TestContext) {
         .await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let places_response: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), eq(1));
+    assert_that!(places_response.places.len(), eq(1));
 }
 
 #[test]
@@ -95,19 +95,42 @@ async fn test_search_geo_position(context: &TestContext) {
         .await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let places_response: OsdmPlaceResponse = response.into_body().into_json().await;
 
     // 20 is the limit on the results
-    assert_that!(api_place.places.len(), eq(20));
-
-    let first = &api_place.places[0];
-    assert_that!(first.name, eq("London Charing Cross"));
-
-    let second = &api_place.places[1];
-    assert_that!(second.name, eq("London Waterloo"));
+    assert_that!(places_response.places.len(), eq(20));
+    // Validate the order of search results
+    let expected_places = vec![
+        "London Charing Cross",
+        "London Waterloo",
+        "London Waterloo (East)",
+        "London Blackfriars",
+        "City Thameslink",
+        "Farringdon",
+        "London Victoria",
+        "London Cannon Street",
+        "London Euston",
+        "Elephant & Castle",
+        "London Kings Cross",
+        "Vauxhall",
+        "Moorgate",
+        "London St Pancras International",
+        "London Bridge",
+        "London Fenchurch Street",
+        "Old Street",
+        "London",
+        "London Marylebone",
+        "London Liverpool Street",
+    ];
+    assert_that!(
+        places_response
+            .places
+            .into_iter()
+            .map(|place| place.name)
+            .collect::<Vec<String>>(),
+        eq(&expected_places)
+    );
 }
-
-// TODO test when either lat or lon is missing
 
 #[test]
 async fn test_search_unknown_parameters(context: &TestContext) {
@@ -131,9 +154,9 @@ async fn test_search_unknown_parameters(context: &TestContext) {
         .await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let places_response: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), gt(1));
+    assert_that!(places_response.places.len(), gt(1));
 }
 
 #[test]
@@ -155,9 +178,9 @@ async fn test_search_missing_parameters(context: &TestContext) {
         .await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let places_response: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), eq(20));
+    assert_that!(places_response.places.len(), eq(20));
 }
 
 // GET /places/{id}
@@ -167,10 +190,10 @@ async fn test_show_ok(context: &TestContext) {
     let response = context.app.request("/places/9430007").send().await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let places_response: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), eq(1));
-    let place = &api_place.places[0];
+    assert_that!(places_response.places.len(), eq(1));
+    let place = &places_response.places[0];
     assert_that!(place.id, eq("urn:uic:stn:9430007"));
     assert_that!(place.object_type, eq("StopPlace"));
     assert_that!(
