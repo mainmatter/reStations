@@ -9,11 +9,12 @@ impl Search {
     pub async fn all(db: &DbPool, limit: i32) -> Result<Vec<StationRecord>, DbError> {
         let stations = sqlx::query_as!(
             StationRecord,
-            limit
             "SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh FROM stations WHERE uic IS NOT NULL LIMIT ?",
+            limit
        )
        .fetch_all(db)
        .await?;
+
         Ok(stations)
     }
 
@@ -25,13 +26,13 @@ impl Search {
         let pattern = format!("%{}%", name);
         let stations = sqlx::query_as!(
             StationRecord,
+            "SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh FROM stations WHERE uic IS NOT NULL AND (name like $1 OR info_de like $1 OR info_en like $1 OR info_es like $1 OR info_fr like $1 OR info_it like $1 OR info_nb like $1 OR info_nl like $1 OR info_cs like $1 OR info_da like $1 OR info_hu like $1 OR info_ja like $1 OR info_ko like $1 OR info_pl like $1 OR info_pt like $1 OR info_ru like $1 OR info_sv like $1 OR info_tr like $1 OR info_zh like $1) LIMIT $2",
             pattern,
             limit
         )
+        .fetch_all(db)
+        .await?;
 
-            "SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh FROM stations WHERE uic IS NOT NULL AND (name like $1 OR info_de like $1 OR info_en like $1 OR info_es like $1 OR info_fr like $1 OR info_it like $1 OR info_nb like $1 OR info_nl like $1 OR info_cs like $1 OR info_da like $1 OR info_hu like $1 OR info_ja like $1 OR info_ko like $1 OR info_pl like $1 OR info_pt like $1 OR info_ru like $1 OR info_sv like $1 OR info_tr like $1 OR info_zh like $1) LIMIT $2",
-              .fetch_all(db)
-              .await?;
         Ok(stations)
     }
 

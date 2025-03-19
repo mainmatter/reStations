@@ -141,7 +141,7 @@ pub async fn search(
 
     let limit = match maybe_restrictions {
         Some(restrictions) => restrictions.number_of_results.unwrap_or(20),
-        None => 20,
+        None => 100,
     };
 
     // TODO improve input handling
