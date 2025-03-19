@@ -22,7 +22,6 @@ impl Search {
         name: &str,
         limit: i32,
     ) -> Result<Vec<StationRecord>, DbError> {
-        println!("Searching all stations");
         let pattern = format!("%{}%", name);
         let stations = sqlx::query_as!(
             StationRecord,
@@ -57,7 +56,6 @@ impl Search {
         longitude: f64,
         limit: i32,
     ) -> Result<Vec<StationRecord>, DbError> {
-        println!("Searching stations by position");
         // First, get a larger set of candidates using a bounding box
         // This is more efficient for the initial filtering
         //
@@ -97,7 +95,6 @@ impl Search {
             (distance * 10000f64) as i64
         });
 
-        // Return the closest 20
         Ok(stations)
     }
 
@@ -109,7 +106,6 @@ impl Search {
         longitude: f64,
         limit: i32,
     ) -> Result<Vec<StationRecord>, DbError> {
-        println!("Searching stations by name and position");
         // First, get stations matching name within a bounding box
         let approx_distance_deg = 1.0; // Roughly 100km at equator
 
@@ -154,7 +150,6 @@ impl Search {
             ((name_score + (distance / 100.0)) * 10000f64) as i64
         });
 
-        // Return the closest 20
         Ok(stations)
     }
 }
