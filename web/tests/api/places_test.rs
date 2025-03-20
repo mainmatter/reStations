@@ -21,7 +21,7 @@ async fn test_list_ok(context: &TestContext) {
 }
 
 #[test]
-async fn test_search_ok(context: &TestContext) {
+async fn test_search_by_name(context: &TestContext) {
     let payload = json!(OsdmPlaceRequest {
         place_input: Some(OsdmInitialPlaceInput {
             name: Some(String::from("Berlin")),
@@ -44,6 +44,7 @@ async fn test_search_ok(context: &TestContext) {
     let places_response: OsdmPlaceResponse = response.into_body().into_json().await;
 
     assert_that!(places_response.places.len(), eq(1));
+    assert_that!(places_response.places[0].name, eq("Überlingen"));
 }
 
 #[test]
