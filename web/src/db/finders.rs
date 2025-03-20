@@ -69,6 +69,8 @@ impl Search {
         // This is more efficient for the initial filtering
         let approx_distance_deg = APPROXIMATE_DISTANCE;
 
+        // Ordering by distance using Haversine formula
+        // 6371 is approximate radius of earth in km
         let query = sqlx::query_as!(
             StationRecord,
             r#"
@@ -77,32 +79,24 @@ impl Search {
             WHERE
                 latitude IS NOT NULL
                 AND longitude IS NOT NULL
-                AND latitude BETWEEN ? - ? AND ? + ?
-                AND longitude BETWEEN ? - ? AND ? + ?
+                AND latitude BETWEEN $1 - $3 AND $1 + $3
+                AND longitude BETWEEN $2 - $3 AND $2 + $3
+            ORDER BY
+                ((latitude - $1) * (latitude - $1)) +
+                ((longitude - $2) * (longitude - $2))
+            ASC
+            LIMIT $4
             "#,
             latitude,
-            approx_distance_deg,
-            latitude,
-            approx_distance_deg,
             longitude,
             approx_distance_deg,
-            longitude,
-            approx_distance_deg
+            limit
         );
 
         // Fetch candidates
-        let mut stations = query.fetch_all(pool).await?;
-        stations.sort_by_cached_key(|place| {
-            let place_lat = place.latitude.expect("Latitude is not present");
-            let place_lon = place.longitude.expect("Longitude is not present");
-            let distance = haversine_distance(latitude, longitude, place_lat, place_lon);
-            (distance * 10000f64) as i64
-        });
+        let stations = query.fetch_all(pool).await?;
 
-        Ok(stations
-            .into_iter()
-            .take(limit.try_into().unwrap())
-            .collect())
+        Ok(stations)
     }
 
     /// Search for stations by name and proximity to geographic coordinates
