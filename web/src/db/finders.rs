@@ -43,10 +43,7 @@ impl Search {
         .fetch_all(db)
         .await?;
 
-        Ok(stations
-            .into_iter()
-            .take(limit.try_into().unwrap())
-            .collect())
+        Ok(stations)
     }
 
     pub async fn by_place_id(db: &DbPool, place_id: &String) -> Result<StationRecord, DbError> {
