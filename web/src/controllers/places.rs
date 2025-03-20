@@ -144,8 +144,7 @@ pub async fn search(
     let maybe_restrictions = place_req.restrictions;
 
     let limit = maybe_restrictions
-        .map(|restrictions| restrictions.number_of_results)
-        .flatten()
+        .and_then(|restrictions| restrictions.number_of_results)
         .unwrap_or(DEFAULT_NUMBER_OF_RESULTS);
 
     // TODO improve input handling
