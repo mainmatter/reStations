@@ -18,8 +18,8 @@ async fn test_list_ok(context: &TestContext) {
     let places_response: OsdmPlaceResponse = response.into_body().into_json().await;
 
     // 23722 was the number of places when last checked, but this may vary with each build.
-    // So we just check that there are more than 1 place.
-    assert_that!(places_response.places.len(), gt(1));
+    // So we just check that there are more than 10,000 places.
+    assert_that!(places_response.places.len(), gt(10_000));
 }
 
 #[test]
