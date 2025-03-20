@@ -159,7 +159,6 @@ impl Search {
         let approx_distance_deg = APPROXIMATE_DISTANCE;
 
         // Ordering by distance using Pythagorean calculation
-        // 6371 is approximate radius of earth in km
         let query = sqlx::query_as!(
             StationRecord,
             r#"
