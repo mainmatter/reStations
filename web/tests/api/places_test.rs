@@ -133,6 +133,37 @@ async fn test_search_geo_position(context: &TestContext) {
 }
 
 #[test]
+async fn test_search_name_and_geo_position(context: &TestContext) {
+    // London Charing Cross
+    let payload = r#"
+        {
+            "placeInput": {
+                "name": "London Charing Cross",
+                "geoPosition": {
+                    "latitude": 51.508362,
+                    "longitude": -0.123835
+                }
+            }
+        }
+    "#;
+    let response = context
+        .app
+        .request("/places")
+        .method(Method::POST)
+        .body(Body::from(payload.to_string()))
+        .header(http::header::CONTENT_TYPE, "application/json")
+        .send()
+        .await;
+    assert_that!(response.status(), eq(200));
+
+    let places_response: OsdmPlaceResponse = response.into_body().into_json().await;
+
+    // 20 is the limit on the results
+    assert_that!(places_response.places.len(), eq(1));
+    assert_that!(places_response.places[0].name, eq("London Charing Cross"));
+}
+
+#[test]
 async fn test_search_unknown_parameters(context: &TestContext) {
     let payload = r#"
         {

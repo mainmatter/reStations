@@ -1,7 +1,6 @@
 use crate::db::error::DbError;
 use crate::db::pool::DbPool;
 use crate::db::station_record::StationRecord;
-use std::f64::consts::PI;
 
 // Approximate distance measured in degrees of latitude/longitude.
 // This value is used to create a geographic bounding box around a specified point.
@@ -113,69 +112,55 @@ impl Search {
         longitude: f64,
         limit: i32,
     ) -> Result<Vec<StationRecord>, DbError> {
-        // First, get stations matching name within a bounding box
         let approx_distance_deg = APPROXIMATE_DISTANCE;
-
         let name_pattern = format!("%{}%", name.to_lowercase());
+
+        // Use the same efficient distance calculation in SQL as by_position()
         let query = sqlx::query_as!(
             StationRecord,
             r#"
             SELECT *
             FROM stations
             WHERE
-                lower(name) LIKE ?
+                (lower(name) LIKE $1 OR
+                 lower(info_de) LIKE $1 OR
+                 lower(info_en) LIKE $1 OR
+                 lower(info_es) LIKE $1 OR
+                 lower(info_fr) LIKE $1 OR
+                 lower(info_it) LIKE $1 OR
+                 lower(info_nb) LIKE $1 OR
+                 lower(info_nl) LIKE $1 OR
+                 lower(info_cs) LIKE $1 OR
+                 lower(info_da) LIKE $1 OR
+                 lower(info_hu) LIKE $1 OR
+                 lower(info_ja) LIKE $1 OR
+                 lower(info_ko) LIKE $1 OR
+                 lower(info_pl) LIKE $1 OR
+                 lower(info_pt) LIKE $1 OR
+                 lower(info_ru) LIKE $1 OR
+                 lower(info_sv) LIKE $1 OR
+                 lower(info_tr) LIKE $1 OR
+                 lower(info_zh) LIKE $1)
                 AND latitude IS NOT NULL
                 AND longitude IS NOT NULL
-                AND latitude BETWEEN ? - ? AND ? + ?
-                AND longitude BETWEEN ? - ? AND ? + ?
+                AND latitude BETWEEN $2 - $4 AND $2 + $4
+                AND longitude BETWEEN $3 - $4 AND $3 + $4
+            ORDER BY
+                ((latitude - $2) * (latitude - $2)) +
+                ((longitude - $3) * (longitude - $3))
+            ASC
+            LIMIT $5
             "#,
             name_pattern,
             latitude,
-            approx_distance_deg,
-            latitude,
-            approx_distance_deg,
             longitude,
             approx_distance_deg,
-            longitude,
-            approx_distance_deg
+            limit
         );
 
-        // Fetch candidates
-        let mut stations = query.fetch_all(pool).await?;
-        stations.sort_by_cached_key(|place| {
-            let place_lat = place.latitude.expect("Latitude is not present");
-            let place_lon = place.longitude.expect("Longitude is not present");
-            let distance = haversine_distance(latitude, longitude, place_lat, place_lon);
-            let name_score = if place.name.to_lowercase() == name.to_lowercase() {
-                0.0
-            } else {
-                1.0
-            };
+        // Fetch results already sorted by distance
+        let stations = query.fetch_all(pool).await?;
 
-            ((name_score + (distance / 100.0)) * 10000f64) as i64
-        });
-
-        Ok(stations
-            .into_iter()
-            .take(limit.try_into().unwrap())
-            .collect())
+        Ok(stations)
     }
-}
-
-fn haversine_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
-    let earth_radius_km = 6371.0;
-
-    let lat1_rad = lat1 * PI / 180.0;
-    let lon1_rad = lon1 * PI / 180.0;
-    let lat2_rad = lat2 * PI / 180.0;
-    let lon2_rad = lon2 * PI / 180.0;
-
-    let dlat = lat2_rad - lat1_rad;
-    let dlon = lon2_rad - lon1_rad;
-
-    let a = (dlat / 2.0).sin() * (dlat / 2.0).sin()
-        + lat1_rad.cos() * lat2_rad.cos() * (dlon / 2.0).sin() * (dlon / 2.0).sin();
-    let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
-
-    earth_radius_km * c
 }
