@@ -143,12 +143,10 @@ pub async fn search(
     let maybe_place_input = place_req.place_input;
     let maybe_restrictions = place_req.restrictions;
 
-    let limit = match maybe_restrictions {
-        Some(restrictions) => restrictions
-            .number_of_results
-            .unwrap_or(DEFAULT_NUMBER_OF_RESULTS),
-        None => DEFAULT_NUMBER_OF_RESULTS,
-    };
+    let limit = maybe_restrictions
+        .map(|restrictions| restrictions.number_of_results)
+        .flatten()
+        .unwrap_or(DEFAULT_NUMBER_OF_RESULTS);
 
     // TODO improve input handling
     let query = match maybe_place_input {
