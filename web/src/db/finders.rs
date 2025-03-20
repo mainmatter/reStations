@@ -13,15 +13,17 @@ impl Search {
     pub async fn all(db: &DbPool, limit: i32) -> Result<Vec<StationRecord>, DbError> {
         let stations = sqlx::query_as!(
             StationRecord,
-            "SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh FROM stations WHERE uic IS NOT NULL",
+            r#"SELECT
+            id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh
+            FROM stations
+            WHERE uic IS NOT NULL
+            LIMIT $1"#,
+            limit
         )
         .fetch_all(db)
         .await?;
 
-        Ok(stations
-            .into_iter()
-            .take(limit.try_into().unwrap())
-            .collect())
+        Ok(stations)
     }
 
     pub async fn by_name(
