@@ -117,7 +117,7 @@ pub async fn search_by_position(
     let mut stations = sqlx::query_as!(
         Station,
         r#"
-        SELECT *
+        SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh
         FROM stations
         WHERE
             latitude IS NOT NULL
@@ -165,7 +165,7 @@ pub async fn search_by_name_and_position(
     let mut stations = sqlx::query_as!(
         Station,
         r#"
-        SELECT *
+        SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh
         FROM stations
         WHERE
             lower(name) LIKE ?
