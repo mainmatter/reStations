@@ -165,3 +165,10 @@ UPDATE stations SET info_sv = null WHERE info_sv = "";
 UPDATE stations SET info_tr = null WHERE info_tr = "";
 UPDATE stations SET info_zh = null WHERE info_zh = "";
 EOF
+
+cp stations.sqlite.db stations-test.sqlite.db
+
+sqlite3 stations-test.sqlite.db << EOF
+-- TODO: remove this once we're properly setting up the test db per test
+-- DELETE FROM stations;
+EOF
