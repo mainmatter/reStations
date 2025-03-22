@@ -9,14 +9,13 @@ publish = false
 doctest = false
 
 [features]
-test-helpers = ["dep:fake", "dep:rand", "dep:regex"]
+test-helpers = ["dep:fake", "dep:rand", "dep:tokio"]
 
 [dependencies]
 anyhow = "1.0"
 fake = { version = "4.0", features = ["derive"], optional = true }
 restations-config = { path = "../config" }
-rand = { version = "0.8", optional = true }
-regex = { version = "1.10", optional = true }
+rand = { version = "0.9", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 sqlx = { version = "0.8", features = [
     "sqlite",
@@ -27,4 +26,5 @@ sqlx = { version = "0.8", features = [
     "chrono",
 ] }
 thiserror = "2.0"
+tokio = { version = "1.44", optional = true, features = ["fs"] }
 validator = { version = "0.20", features = ["derive"] }
