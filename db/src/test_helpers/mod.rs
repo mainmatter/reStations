@@ -1,11 +1,5 @@
 use crate::{connect_pool, DbPool};
-use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
-use regex::{Captures, Regex};
 use restations_config::DatabaseConfig;
-use sqlx::{Connection, Executor};
-use std::str::FromStr;
-use std::sync::Arc;
 
 /// Sets up a dedicated database to be used in a test case.
 ///
@@ -61,14 +55,14 @@ pub async fn teardown_db(_db_pool: DbPool) {
 //     }
 // }
 
-fn build_test_db_name(base_name: &str) -> String {
-    let test_db_suffix: String = thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(30)
-        .map(char::from)
-        .collect();
-    format!("{}_{}", base_name, test_db_suffix).to_lowercase()
-}
+// fn build_test_db_name(base_name: &str) -> String {
+//     let test_db_suffix: String = thread_rng()
+//         .sample_iter(&Alphanumeric)
+//         .take(30)
+//         .map(char::from)
+//         .collect();
+//     format!("{}_{}", base_name, test_db_suffix).to_lowercase()
+// }
 
 // fn parse_db_config(url: &str) -> PgConnectOptions {
 //     PgConnectOptions::from_str(url).expect("Invalid DATABASE_URL!")
