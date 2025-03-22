@@ -12,3 +12,4 @@
 # Data
 stations.csv
 stations.sqlite.db
+stations-test.sqlite.db

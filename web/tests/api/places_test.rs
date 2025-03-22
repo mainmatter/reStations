@@ -3,15 +3,17 @@ use axum::{
     http::{self, Method},
 };
 use googletest::prelude::{assert_that, eq, gt};
-use restations_macros::test;
-use restations_web::controllers::places::*;
-use restations_web::test_helpers::{BodyExt, RouterExt, TestContext};
+use restations_macros::db_test;
+use restations_web::osdm::{
+    OsdmGeoPosition, OsdmInitialPlaceInput, OsdmPlaceRequest, OsdmPlaceResponse, OsdmProblem,
+};
+use restations_web::test_helpers::{BodyExt, DbTestContext, RouterExt};
 use serde_json::json;
 
 // GET /places
 //
-#[test]
-async fn test_list_ok(context: &TestContext) {
+#[db_test]
+async fn test_list_ok(context: &DbTestContext) {
     let response = context.app.request("/places").send().await;
     assert_that!(response.status(), eq(200));
 
@@ -20,8 +22,8 @@ async fn test_list_ok(context: &TestContext) {
     assert_that!(api_place.places.len(), gt(1));
 }
 
-#[test]
-async fn test_search_ok(context: &TestContext) {
+#[db_test]
+async fn test_search_ok(context: &DbTestContext) {
     let payload = json!(OsdmPlaceRequest {
         place_input: Some(OsdmInitialPlaceInput {
             name: Some(String::from("Berlin")),
@@ -43,8 +45,8 @@ async fn test_search_ok(context: &TestContext) {
     assert_that!(api_place.places.len(), gt(1));
 }
 
-#[test]
-async fn test_search_other_languages(context: &TestContext) {
+#[db_test]
+async fn test_search_other_languages(context: &DbTestContext) {
     let payload = json!(OsdmPlaceRequest {
         place_input: Some(OsdmInitialPlaceInput {
             name: Some(String::from("Seville")),
@@ -66,8 +68,8 @@ async fn test_search_other_languages(context: &TestContext) {
     assert_that!(api_place.places.len(), gt(1));
 }
 
-#[test]
-async fn test_search_geo_position(context: &TestContext) {
+#[db_test]
+async fn test_search_geo_position(context: &DbTestContext) {
     // London Charing Cross
     let payload = r#"
         {
@@ -103,8 +105,8 @@ async fn test_search_geo_position(context: &TestContext) {
 
 // TODO test when either lat or lon is missing
 
-#[test]
-async fn test_search_unknown_parameters(context: &TestContext) {
+#[db_test]
+async fn test_search_unknown_parameters(context: &DbTestContext) {
     let payload = r#"
         {
             "placeInput": {
@@ -130,8 +132,8 @@ async fn test_search_unknown_parameters(context: &TestContext) {
     assert_that!(api_place.places.len(), gt(1));
 }
 
-#[test]
-async fn test_search_missing_parameters(context: &TestContext) {
+#[db_test]
+async fn test_search_missing_parameters(context: &DbTestContext) {
     let payload = r#"
         {
             "unknown": {
@@ -156,8 +158,8 @@ async fn test_search_missing_parameters(context: &TestContext) {
 
 // GET /places/{id}
 //
-#[test]
-async fn test_show_ok(context: &TestContext) {
+#[db_test]
+async fn test_show_ok(context: &DbTestContext) {
     let response = context.app.request("/places/9430007").send().await;
     assert_that!(response.status(), eq(200));
 
@@ -176,13 +178,13 @@ async fn test_show_ok(context: &TestContext) {
     );
 }
 
-#[test]
-async fn test_show_not_found(context: &TestContext) {
+#[db_test]
+async fn test_show_not_found(context: &DbTestContext) {
     let response = context.app.request("/places/1").send().await;
     assert_that!(response.status(), eq(404));
 
     let problem: OsdmProblem = response.into_body().into_json::<OsdmProblem>().await;
 
     assert_that!(problem.code, eq("not-found"));
-    assert_that!(problem.title, eq("Could not find place with id #1"));
+    assert_that!(problem.title, eq("Could not find place!"));
 }

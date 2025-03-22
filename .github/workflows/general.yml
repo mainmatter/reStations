@@ -32,9 +32,7 @@ jobs:
       - run: ./scripts/sync-data
 
       - name: clippy
-        run: |
-          export DATABASE_URL=sqlite:stations.sqlite.db
-          cargo clippy --all-targets -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
 
   test:
     name: "Test"
@@ -47,6 +45,4 @@ jobs:
       - run: ./scripts/sync-data
 
       - name: test
-        run: |
-          export DATABASE_URL=sqlite:stations.sqlite.db
-          cargo test
+        run: cargo test
