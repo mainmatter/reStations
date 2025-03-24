@@ -1,2 +1,3 @@
 [alias]
+db = ["run", "--package", "restations-cli", "--bin", "db", "--"]
 generate = ["run", "--package", "restations-cli", "--bin", "generate", "--"]
