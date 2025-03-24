@@ -246,10 +246,7 @@ mod tests {
 
             jail.set_env("APP_SERVER__IP", "127.0.0.1");
             jail.set_env("APP_SERVER__PORT", "3000");
-            jail.set_env(
-                "APP_DATABASE__URL",
-                "postgresql://user:pass@localhost:5432/restations",
-            );
+            jail.set_env("APP_DATABASE__URL", "sqlite:stations.sqlite.db");
             let config = load_config::<Config>(&Environment::Development).unwrap();
 
             assert_that!(
@@ -260,7 +257,7 @@ mod tests {
                         port: 3000,
                     },
                     database: DatabaseConfig {
-                        url: String::from("postgresql://user:pass@localhost:5432/restations"),
+                        url: String::from("sqlite:stations.sqlite.db"),
                     },
                     app_setting: String::from("override!"),
                 })
@@ -290,10 +287,7 @@ mod tests {
 
             jail.set_env("APP_SERVER__IP", "127.0.0.1");
             jail.set_env("APP_SERVER__PORT", "3000");
-            jail.set_env(
-                "APP_DATABASE__URL",
-                "postgresql://user:pass@localhost:5432/restations",
-            );
+            jail.set_env("APP_DATABASE__URL", "sqlite:stations.sqlite.db");
             let config = load_config::<Config>(&Environment::Test).unwrap();
 
             assert_that!(
@@ -304,7 +298,7 @@ mod tests {
                         port: 3000,
                     },
                     database: DatabaseConfig {
-                        url: String::from("postgresql://user:pass@localhost:5432/restations"),
+                        url: String::from("sqlite:stations.sqlite.db"),
                     },
                     app_setting: String::from("override!"),
                 })
@@ -334,10 +328,7 @@ mod tests {
 
             jail.set_env("APP_SERVER__IP", "127.0.0.1");
             jail.set_env("APP_SERVER__PORT", "3000");
-            jail.set_env(
-                "APP_DATABASE__URL",
-                "postgresql://user:pass@localhost:5432/restations",
-            );
+            jail.set_env("APP_DATABASE__URL", "sqlite:stations.sqlite.db");
             let config = load_config::<Config>(&Environment::Production).unwrap();
 
             assert_that!(
@@ -348,7 +339,7 @@ mod tests {
                         port: 3000,
                     },
                     database: DatabaseConfig {
-                        url: String::from("postgresql://user:pass@localhost:5432/restations"),
+                        url: String::from("sqlite:stations.sqlite.db"),
                     },
                     app_setting: String::from("override!"),
                 })

@@ -4,11 +4,11 @@ use guppy::{Version, VersionReq};
 use restations_cli::util::ui::UI;
 use restations_config::DatabaseConfig;
 use restations_config::{load_config, parse_env, Config, Environment};
-use sqlx::postgres::{PgConnectOptions, PgConnection};
 use sqlx::{
     migrate::{Migrate, Migrator},
     ConnectOptions, Connection, Executor,
 };
+use sqlx::{sqlite::SqliteConnectOptions, SqliteConnection};
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -52,14 +52,8 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    #[command(about = "Drop the database")]
-    Drop,
-    #[command(about = "Create the database")]
-    Create,
     #[command(about = "Migrate the database")]
     Migrate,
-    #[command(about = "Reset (drop, create, migrate) the database")]
-    Reset,
     #[command(about = "Seed the database")]
     Seed,
     #[command(about = "Generate query metadata to support offline compile-time verification")]
@@ -72,22 +66,6 @@ async fn cli(ui: &mut UI<'_>, cli: Cli) -> Result<(), anyhow::Error> {
     match config {
         Ok(config) => {
             match cli.command {
-                Commands::Drop => {
-                    ui.info(&format!("Dropping {} database…", &cli.env));
-                    let db_name = drop(&config.database)
-                        .await
-                        .context("Could not drop database!")?;
-                    ui.success(&format!("Dropped database {} successfully.", db_name));
-                    Ok(())
-                }
-                Commands::Create => {
-                    ui.info(&format!("Creating {} database…", &cli.env));
-                    let db_name = create(&config.database)
-                        .await
-                        .context("Could not create database!")?;
-                    ui.success(&format!("Created database {} successfully.", db_name));
-                    Ok(())
-                }
                 Commands::Migrate => {
                     ui.info(&format!("Migrating {} database…", &cli.env));
                     ui.indent();
@@ -105,17 +83,6 @@ async fn cli(ui: &mut UI<'_>, cli: Cli) -> Result<(), anyhow::Error> {
                         .await
                         .context("Could not seed database!")?;
                     ui.success("Seeded database successfully.");
-                    Ok(())
-                }
-                Commands::Reset => {
-                    ui.info(&format!("Resetting {} database…", &cli.env));
-                    ui.indent();
-                    let result = reset(ui, &config.database)
-                        .await
-                        .context("Could not reset the database!");
-                    ui.outdent();
-                    let db_name = result?;
-                    ui.success(&format!("Reset database {} successfully.", db_name));
                     Ok(())
                 }
                 Commands::Prepare => {
@@ -154,38 +121,6 @@ async fn cli(ui: &mut UI<'_>, cli: Cli) -> Result<(), anyhow::Error> {
         }
         Err(e) => Err(e.context("Could not load config!")),
     }
-}
-
-async fn drop(config: &DatabaseConfig) -> Result<String, anyhow::Error> {
-    let db_config = get_db_config(config);
-    let db_name = db_config
-        .get_database()
-        .context("Failed to get database name!")?;
-    let mut root_connection = get_root_db_client(config).await;
-
-    let query = format!("DROP DATABASE {}", db_name);
-    root_connection
-        .execute(query.as_str())
-        .await
-        .context("Failed to drop database!")?;
-
-    Ok(String::from(db_name))
-}
-
-async fn create(config: &DatabaseConfig) -> Result<String, anyhow::Error> {
-    let db_config = get_db_config(config);
-    let db_name = db_config
-        .get_database()
-        .context("Failed to get database name!")?;
-    let mut root_connection = get_root_db_client(config).await;
-
-    let query = format!("CREATE DATABASE {}", db_name);
-    root_connection
-        .execute(query.as_str())
-        .await
-        .context("Failed to create database!")?;
-
-    Ok(String::from(db_name))
 }
 
 async fn migrate(ui: &mut UI<'_>, config: &DatabaseConfig) -> Result<i32, anyhow::Error> {
@@ -245,38 +180,14 @@ async fn seed(config: &DatabaseConfig) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-async fn reset(ui: &mut UI<'_>, config: &DatabaseConfig) -> Result<String, anyhow::Error> {
-    ui.log("Dropping database…");
-    drop(config).await?;
-    ui.log("Recreating database…");
-    let db_name = create(config).await?;
-    ui.log("Migrating database…");
-    ui.indent();
-    let migration_result = migrate(ui, config).await;
-    ui.outdent();
-
-    match migration_result {
-        Ok(_) => Ok(db_name),
-        Err(e) => Err(e),
-    }
-}
-
-fn get_db_config(config: &DatabaseConfig) -> PgConnectOptions {
+fn get_db_config(config: &DatabaseConfig) -> SqliteConnectOptions {
     let db_url = Url::parse(&config.url).expect("Invalid DATABASE_URL!");
     ConnectOptions::from_url(&db_url).expect("Invalid DATABASE_URL!")
 }
 
-async fn get_db_client(config: &DatabaseConfig) -> PgConnection {
+async fn get_db_client(config: &DatabaseConfig) -> SqliteConnection {
     let db_config = get_db_config(config);
-    let connection: PgConnection = Connection::connect_with(&db_config).await.unwrap();
-
-    connection
-}
-
-async fn get_root_db_client(config: &DatabaseConfig) -> PgConnection {
-    let db_config = get_db_config(config);
-    let root_db_config = db_config.clone().database("postgres");
-    let connection: PgConnection = Connection::connect_with(&root_db_config).await.unwrap();
+    let connection: SqliteConnection = Connection::connect_with(&db_config).await.unwrap();
 
     connection
 }
