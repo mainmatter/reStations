@@ -79,7 +79,7 @@ pub async fn load(
 ) -> Result<Station, crate::Error> {
     match sqlx::query_as!(
         Station,
-        "SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh FROM stations WHERE uic = $1",
+        "SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh FROM stations WHERE uic = ?",
         id
     )
     .fetch_optional(executor)
@@ -96,7 +96,7 @@ pub async fn search_by_name(
     executor: impl sqlx::Executor<'_, Database = Sqlite>,
 ) -> Result<Vec<Station>, crate::Error> {
     let pattern = format!("%{}%", name);
-    let stations = sqlx::query_as!(Station, "SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh from stations  WHERE uic IS NOT NULL AND (name like $1 OR info_de like $1 OR info_en like $1 OR info_es like $1 OR info_fr like $1 OR info_it like $1 OR info_nb like $1 OR info_nl like $1 OR info_cs like $1 OR info_da like $1 OR info_hu like $1 OR info_ja like $1 OR info_ko like $1 OR info_pl like $1 OR info_pt like $1 OR info_ru like $1 OR info_sv like $1 OR info_tr like $1 OR info_zh like $1)", pattern)
+    let stations = sqlx::query_as!(Station, "SELECT id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh from stations  WHERE uic IS NOT NULL AND (name like ? OR info_de like ? OR info_en like ? OR info_es like ? OR info_fr like ? OR info_it like ? OR info_nb like ? OR info_nl like ? OR info_cs like ? OR info_da like ? OR info_hu like ? OR info_ja like ? OR info_ko like ? OR info_pl like ? OR info_pt like ? OR info_ru like ? OR info_sv like ? OR info_tr like ? OR info_zh like ?)", pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern)
           .fetch_all(executor)
           .await?;
     Ok(stations)

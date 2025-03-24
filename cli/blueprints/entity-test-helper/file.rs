@@ -13,7 +13,7 @@ pub struct {{entity_struct_name}}Changeset {
 pub async fn create({{entity_singular_name}}: {{entity_struct_name}}Changeset, db: &DBPool) -> Result<{{entity_struct_name}}, anyhow::Error> {
     todo!("Adapt the SQL query as necessary!");
     let record = sqlx::query!(
-        "INSERT INTO {{entity_plural_name}} (name) VALUES ($1) RETURNING id",
+        "INSERT INTO {{entity_plural_name}} (name) VALUES (?) RETURNING id",
         {{entity_singular_name}}.name,
     )
     .fetch_one(db)

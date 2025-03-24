@@ -25,7 +25,7 @@ pub async fn load(
     id: Uuid,
     executor: impl sqlx::Executor<'_, Database = Postgres>,
 ) -> Result<User, crate::Error> {
-    match sqlx::query_as!(Task, "SELECT id, name FROM users WHERE id = $1", id)
+    match sqlx::query_as!(Task, "SELECT id, name FROM users WHERE id = ?", id)
         .fetch_optional(executor)
         .await
         .map_err(|e| crate::Error::DbError(e.into()))?
@@ -71,7 +71,7 @@ pub async fn create(
     user.validate()?;
 
     let record = sqlx::query!(
-        "INSERT INTO users (name) VALUES ($1) RETURNING id",
+        "INSERT INTO users (name) VALUES (?) RETURNING id",
         user.name
     )
     .fetch_one(executor)

@@ -39,7 +39,7 @@ pub async fn load(
     todo!("Adapt the SQL query as necessary!");
     match sqlx::query_as!(
         {{entity_struct_name}},
-        "SELECT id, description FROM {{entity_plural_name}} WHERE id = $1",
+        "SELECT id, description FROM {{entity_plural_name}} WHERE id = ?",
         id
     )
     .fetch_optional(executor)
@@ -59,7 +59,7 @@ pub async fn create(
 
     todo!("Adapt the SQL query and bound parameters as necessary!");
     let record = sqlx::query!(
-        "INSERT INTO {{entity_plural_name}} (name) VALUES ($1) RETURNING id",
+        "INSERT INTO {{entity_plural_name}} (name) VALUES (?) RETURNING id",
         {{entity_singular_name}}.name
     )
     .fetch_one(executor)
@@ -81,7 +81,7 @@ pub async fn update(
 
     todo!("Adapt the SQL query and bound parameters as necessary!");
     match sqlx::query!(
-        "UPDATE {{entity_plural_name}} SET name = $1 WHERE id = $2 RETURNING id, name",
+        "UPDATE {{entity_plural_name}} SET name = ? WHERE id = ? RETURNING id, name",
         {{entity_singular_name}}.name,
         id
     )
@@ -102,7 +102,7 @@ pub async fn delete(
     executor: impl sqlx::Executor<'_, Database = Postgres>,
 ) -> Result<(), crate::Error> {
     todo!("Adapt the SQL query as necessary!");
-    match sqlx::query!("DELETE FROM {{entity_plural_name}} WHERE id = $1 RETURNING id", id)
+    match sqlx::query!("DELETE FROM {{entity_plural_name}} WHERE id = ? RETURNING id", id)
         .fetch_optional(executor)
         .await
         .map_err(crate::Error::DbError)?
