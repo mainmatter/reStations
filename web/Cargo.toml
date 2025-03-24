@@ -40,7 +40,7 @@ restations-macros = { path = "../macros", optional = true }
 validator = "0.20"
 
 [dev-dependencies]
-fake = "3.0"
+fake = "4.0"
 googletest = "0.13"
 restations-db = { path = "../db", features = ["test-helpers"] }
 restations-web = { path = ".", features = ["test-helpers"] }

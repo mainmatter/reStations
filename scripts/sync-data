@@ -169,6 +169,5 @@ EOF
 cp stations.sqlite.db stations-test.sqlite.db
 
 sqlite3 stations-test.sqlite.db << EOF
--- TODO: remove this once we're properly setting up the test db per test
--- DELETE FROM stations;
+DELETE FROM stations;
 EOF

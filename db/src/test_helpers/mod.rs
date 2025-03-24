@@ -8,6 +8,8 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use tokio::fs;
 
+pub mod stations;
+
 /// Sets up a dedicated database to be used in a test case.
 ///
 /// This sets up a dedicated database as a fork of the main test database as configured in `.env.test`. The database can be used in a test case to ensure the test case is isolated from other test cases. The function returns a connection pool connected to the created database.
