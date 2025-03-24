@@ -99,7 +99,6 @@ ALTER TABLE stations DROP COLUMN is_city;
 ALTER TABLE stations DROP COLUMN is_main_station;
 ALTER TABLE stations DROP COLUMN is_airport;
 ALTER TABLE stations DROP COLUMN is_suggestable;
-ALTER TABLE stations DROP COLUMN country_hint;
 ALTER TABLE stations DROP COLUMN main_station_hint;
 ALTER TABLE stations DROP COLUMN sncf_id;
 ALTER TABLE stations DROP COLUMN sncf_tvs_id;
@@ -165,4 +164,10 @@ UPDATE stations SET info_ru = null WHERE info_ru = "";
 UPDATE stations SET info_sv = null WHERE info_sv = "";
 UPDATE stations SET info_tr = null WHERE info_tr = "";
 UPDATE stations SET info_zh = null WHERE info_zh = "";
+EOF
+
+cp stations.sqlite.db stations-test.sqlite.db
+
+sqlite3 stations-test.sqlite.db << EOF
+DELETE FROM stations;
 EOF
