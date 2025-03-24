@@ -2,19 +2,10 @@ use anyhow::{anyhow, Context};
 use clap::{Parser, Subcommand};
 use guppy::{Version, VersionReq};
 use restations_cli::util::ui::UI;
-use restations_config::DatabaseConfig;
 use restations_config::{load_config, parse_env, Config, Environment};
-use sqlx::{
-    migrate::{Migrate, Migrator},
-    ConnectOptions, Connection, Executor,
-};
-use sqlx::{sqlite::SqliteConnectOptions, SqliteConnection};
-use std::collections::HashMap;
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::{ExitCode, Stdio};
 use tokio::io::{stdin, AsyncBufReadExt};
-use url::Url;
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -52,10 +43,6 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    #[command(about = "Migrate the database")]
-    Migrate,
-    #[command(about = "Seed the database")]
-    Seed,
     #[command(about = "Generate query metadata to support offline compile-time verification")]
     Prepare,
 }
@@ -66,25 +53,6 @@ async fn cli(ui: &mut UI<'_>, cli: Cli) -> Result<(), anyhow::Error> {
     match config {
         Ok(config) => {
             match cli.command {
-                Commands::Migrate => {
-                    ui.info(&format!("Migrating {} database…", &cli.env));
-                    ui.indent();
-                    let migrations = migrate(ui, &config.database)
-                        .await
-                        .context("Could not migrate database!");
-                    ui.outdent();
-                    let migrations = migrations?;
-                    ui.success(&format!("{} migrations applied.", migrations));
-                    Ok(())
-                }
-                Commands::Seed => {
-                    ui.info(&format!("Seeding {} database…", &cli.env));
-                    seed(&config.database)
-                        .await
-                        .context("Could not seed database!")?;
-                    ui.success("Seeded database successfully.");
-                    Ok(())
-                }
                 Commands::Prepare => {
                     if let Err(e) = ensure_sqlx_cli_installed(ui).await {
                         return Err(e.context("Error ensuring sqlx-cli is installed!"));
@@ -121,75 +89,6 @@ async fn cli(ui: &mut UI<'_>, cli: Cli) -> Result<(), anyhow::Error> {
         }
         Err(e) => Err(e.context("Could not load config!")),
     }
-}
-
-async fn migrate(ui: &mut UI<'_>, config: &DatabaseConfig) -> Result<i32, anyhow::Error> {
-    let db_config = get_db_config(config);
-    let migrations_path = db_package_root()?.join("migrations");
-    let migrator = Migrator::new(Path::new(&migrations_path))
-        .await
-        .context("Failed to create migrator!")?;
-    let mut connection = db_config
-        .connect()
-        .await
-        .context("Failed to connect to database!")?;
-
-    connection
-        .ensure_migrations_table()
-        .await
-        .context("Failed to ensure migrations table!")?;
-
-    let applied_migrations: HashMap<_, _> = connection
-        .list_applied_migrations()
-        .await
-        .context("Failed to list applied migrations!")?
-        .into_iter()
-        .map(|m| (m.version, m))
-        .collect();
-
-    let mut applied = 0;
-    for migration in migrator.iter() {
-        if !applied_migrations.contains_key(&migration.version) {
-            connection
-                .apply(migration)
-                .await
-                .context("Failed to apply migration {}!")?;
-            ui.log(&format!("Applied migration {}.", migration.version));
-            applied += 1;
-        }
-    }
-
-    Ok(applied)
-}
-
-async fn seed(config: &DatabaseConfig) -> Result<(), anyhow::Error> {
-    let mut connection = get_db_client(config).await;
-
-    let statements = fs::read_to_string("./db/seeds.sql")
-        .expect("Could not read seeds – make sure db/seeds.sql exists!");
-
-    let mut transaction = connection
-        .begin()
-        .await
-        .context("Failed to start transaction!")?;
-    transaction
-        .execute(statements.as_str())
-        .await
-        .context("Failed to execute seeds!")?;
-
-    Ok(())
-}
-
-fn get_db_config(config: &DatabaseConfig) -> SqliteConnectOptions {
-    let db_url = Url::parse(&config.url).expect("Invalid DATABASE_URL!");
-    ConnectOptions::from_url(&db_url).expect("Invalid DATABASE_URL!")
-}
-
-async fn get_db_client(config: &DatabaseConfig) -> SqliteConnection {
-    let db_config = get_db_config(config);
-    let connection: SqliteConnection = Connection::connect_with(&db_config).await.unwrap();
-
-    connection
 }
 
 fn get_cargo_path() -> Result<String, anyhow::Error> {
