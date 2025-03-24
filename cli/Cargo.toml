@@ -26,7 +26,7 @@ restations-config = { path = "../config" }
 sqlx = { version = "0.8", features = [
     "runtime-tokio",
     "tls-rustls",
-    "postgres",
+    "sqlite",
     "macros",
     "uuid",
     "migrate",

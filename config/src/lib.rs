@@ -93,7 +93,7 @@ impl ServerConfig {
 #[derive(Deserialize, Clone, Debug)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct DatabaseConfig {
-    /// The URL to use to connect to the database, e.g. "postgresql://user:password@localhost:5432/database"
+    /// The URL to use to connect to the database, e.g. "sqlite:stations.sqlite.db"
     pub url: String,
 }
 

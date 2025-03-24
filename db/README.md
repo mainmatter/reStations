@@ -2,7 +2,7 @@
 
 This crate contains all code related to database access: entities, migrations, functions for validating and reading and writing data.
 
-_Gerust uses [sqlx](https://crates.io/crates/sqlx) without an additional ORM and is set up for use with PostgreSQL._
+_Gerust uses [sqlx](https://crates.io/crates/sqlx) without an additional ORM and is set up for use with SQLite._
 
 ## Entities
 
