@@ -6,8 +6,11 @@ use fake::{
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::Sqlite;
-use std::f64::consts::PI;
 use validator::Validate;
+
+// Approximate distance measured in degrees of latitude/longitude.
+// This value is used to create a geographic bounding box around a specified point.
+pub const APPROXIMATE_DISTANCE: f32 = 1.0; // Roughly 100km at equator
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct Station {
@@ -252,7 +255,7 @@ pub async fn search_by_position(
     // and perhaps configurable as an env var
     let approx_distance_deg = 1.0; // Roughly 100km at equator
 
-    let mut stations = sqlx::query_as!(
+    let stations = sqlx::query_as!(
         Station,
         r#"
         SELECT
@@ -285,27 +288,19 @@ pub async fn search_by_position(
         WHERE
             latitude IS NOT NULL
             AND longitude IS NOT NULL
-            AND latitude BETWEEN ? - ? AND ? + ?
-            AND longitude BETWEEN ? - ? AND ? + ?
+            AND latitude BETWEEN $1 - $3 AND $1 + $3
+            AND longitude BETWEEN $2 - $3 AND $2 + $3
+        ORDER BY
+            ((latitude - $1) * (latitude - $1)) +
+            ((longitude - $2) * (longitude - $2))
+        ASC
         "#,
         latitude,
-        approx_distance_deg,
-        latitude,
-        approx_distance_deg,
         longitude,
         approx_distance_deg,
-        longitude,
-        approx_distance_deg
     )
     .fetch_all(executor)
     .await?;
-
-    stations.sort_by_cached_key(|place| {
-        let place_lat = place.latitude.expect("Latitude is not present");
-        let place_lon = place.longitude.expect("Longitude is not present");
-        let distance = haversine_distance(latitude, longitude, place_lat, place_lon);
-        (distance * 10000f64) as i64
-    });
 
     // Return the closest 20
     Ok(stations.into_iter().take(20).collect())
@@ -325,7 +320,7 @@ pub async fn search_by_name_and_position(
     let approx_distance_deg = 1.0; // Roughly 100km at equator
 
     let name_pattern = format!("%{}%", name.to_lowercase());
-    let mut stations = sqlx::query_as!(
+    let stations = sqlx::query_as!(
         Station,
         r#"
         SELECT
@@ -359,53 +354,21 @@ pub async fn search_by_name_and_position(
             lower(name) LIKE ?
             AND latitude IS NOT NULL
             AND longitude IS NOT NULL
-            AND latitude BETWEEN ? - ? AND ? + ?
-            AND longitude BETWEEN ? - ? AND ? + ?
+            AND latitude BETWEEN $2 - $4 AND $2 + $4
+            AND longitude BETWEEN $3 - $4 AND $3 + $4
+        ORDER BY
+            ((latitude - $2) * (latitude - $2)) +
+            ((longitude - $3) * (longitude - $3))
+        ASC
         "#,
         name_pattern,
         latitude,
-        approx_distance_deg,
-        latitude,
-        approx_distance_deg,
         longitude,
         approx_distance_deg,
-        longitude,
-        approx_distance_deg
     )
     .fetch_all(executor)
     .await?;
 
-    stations.sort_by_cached_key(|place| {
-        let place_lat = place.latitude.expect("Latitude is not present");
-        let place_lon = place.longitude.expect("Longitude is not present");
-        let distance = haversine_distance(latitude, longitude, place_lat, place_lon);
-        let name_score = if place.name.to_lowercase() == name.to_lowercase() {
-            0.0
-        } else {
-            1.0
-        };
-
-        ((name_score + (distance / 100.0)) * 10000f64) as i64
-    });
-
     // Return the closest 20
     Ok(stations.into_iter().take(20).collect())
-}
-
-fn haversine_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
-    let earth_radius_km = 6371.0;
-
-    let lat1_rad = lat1 * PI / 180.0;
-    let lon1_rad = lon1 * PI / 180.0;
-    let lat2_rad = lat2 * PI / 180.0;
-    let lon2_rad = lon2 * PI / 180.0;
-
-    let dlat = lat2_rad - lat1_rad;
-    let dlon = lon2_rad - lon1_rad;
-
-    let a = (dlat / 2.0).sin() * (dlat / 2.0).sin()
-        + lat1_rad.cos() * lat2_rad.cos() * (dlon / 2.0).sin() * (dlon / 2.0).sin();
-    let c = 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
-
-    earth_radius_km * c
 }
