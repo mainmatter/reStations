@@ -12,6 +12,8 @@ use restations_web::osdm::{
 use restations_web::test_helpers::{BodyExt, DbTestContext, RouterExt};
 use serde_json::json;
 
+// GET /places
+//
 #[db_test]
 async fn test_list_empty(context: &DbTestContext) {
     let response = context.app.request("/places").send().await;
@@ -36,6 +38,9 @@ async fn test_list_ok(context: &DbTestContext) {
     assert_that!(response_body.places.len(), eq(1));
 }
 
+// POST /places
+// Search by name
+//
 #[db_test]
 async fn test_search_by_name_ok(context: &DbTestContext) {
     let mut changeset: stations::StationChangeset = Faker.fake();
@@ -154,6 +159,9 @@ async fn test_search_other_languages(context: &DbTestContext) {
     assert_that!(response_body.places.len(), eq(1));
 }
 
+// POST /places
+// Search by geo position
+//
 #[db_test]
 async fn test_search_geo_position(context: &DbTestContext) {
     let mut changeset: stations::StationChangeset = Faker.fake();
@@ -173,6 +181,9 @@ async fn test_search_geo_position(context: &DbTestContext) {
         .unwrap();
 
     // London Charing Cross
+    //
+    // Note: we're posting json here to assert camelcasing of request structs
+    // is in place
     let payload = r#"
         {
             "placeInput": {
@@ -223,6 +234,9 @@ async fn test_search_geo_position_with_results_limit(context: &DbTestContext) {
         .await
         .unwrap();
 
+    // Note: we're posting json here to assert camelcasing of request structs
+    // is in place
+    //
     // London Charing Cross
     let payload = r#"
         {
@@ -254,8 +268,14 @@ async fn test_search_geo_position_with_results_limit(context: &DbTestContext) {
     assert_that!(first.name, eq("London Charing Cross"));
 }
 
+// POST /places
+// Weird requests that we still gracefully handle
+//
+
 #[db_test]
 async fn test_search_unknown_parameters(context: &DbTestContext) {
+    // Note: we're posting json here to assert camelcasing of request structs
+    // is in place
     let payload = r#"
         {
             "placeInput": {
@@ -291,6 +311,8 @@ async fn test_search_missing_parameters(context: &DbTestContext) {
             .unwrap();
     }
 
+    // Note: we're posting json here to assert camelcasing of request structs
+    // is in place
     let payload = r#"
         {
             "unknown": {
