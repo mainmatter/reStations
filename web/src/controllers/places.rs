@@ -7,6 +7,9 @@ use axum::response::Json;
 use restations_db::entities::stations;
 use std::convert::From;
 
+// TODO perhaps make this configurable through an environment variable?
+pub const DEFAULT_NUMBER_OF_RESULTS: i32 = 20;
+
 impl From<stations::Station> for OsdmPlace {
     fn from(station: stations::Station) -> Self {
         let geo_position = match (station.latitude, station.longitude) {
@@ -50,6 +53,11 @@ pub async fn search(
     Json(place_req): Json<OsdmPlaceRequest>,
 ) -> Result<PlacesResponse, Error> {
     let maybe_place_input = place_req.place_input;
+    let maybe_restrictions = place_req.restrictions;
+
+    let limit = maybe_restrictions
+        .and_then(|restrictions| restrictions.number_of_results)
+        .unwrap_or(DEFAULT_NUMBER_OF_RESULTS);
 
     // TODO improve input handling
     let stations = match maybe_place_input {
@@ -61,27 +69,31 @@ pub async fn search(
                         &name,
                         position.latitude,
                         position.longitude,
+                        limit,
                         &app_state.db_pool,
                     )
                     .await?
                 }
                 // Search by name only
-                (Some(name), None) => stations::search_by_name(&name, &app_state.db_pool).await?,
+                (Some(name), None) => {
+                    stations::search_by_name(&name, limit, &app_state.db_pool).await?
+                }
                 // Search by position only
                 (None, Some(position)) => {
                     // TODO handle missing coordinates
                     stations::search_by_position(
                         position.latitude,
                         position.longitude,
+                        limit,
                         &app_state.db_pool,
                     )
                     .await?
                 }
                 // No search criteria, return all
-                (None, None) => stations::load_all(&app_state.db_pool).await?,
+                (None, None) => stations::load_all_within_limit(limit, &app_state.db_pool).await?,
             }
         }
-        None => stations::load_all(&app_state.db_pool).await?,
+        None => stations::load_all_within_limit(limit, &app_state.db_pool).await?,
     };
 
     Ok(PlacesResponse::Ok(stations.into()))
