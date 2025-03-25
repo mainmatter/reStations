@@ -17,9 +17,9 @@ async fn test_list_empty(context: &DbTestContext) {
     let response = context.app.request("/places").send().await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let response_body: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), eq(0));
+    assert_that!(response_body.places.len(), eq(0));
 }
 
 #[db_test]
@@ -31,9 +31,9 @@ async fn test_list_ok(context: &DbTestContext) {
     let response = context.app.request("/places").send().await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let response_body: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), eq(1));
+    assert_that!(response_body.places.len(), eq(1));
 }
 
 #[db_test]
@@ -51,6 +51,7 @@ async fn test_search_by_name_ok(context: &DbTestContext) {
         .unwrap();
 
     let payload = json!(OsdmPlaceRequest {
+        restrictions: None,
         place_input: Some(OsdmInitialPlaceInput {
             name: Some(String::from("Berlin")),
             geo_position: None,
@@ -66,9 +67,9 @@ async fn test_search_by_name_ok(context: &DbTestContext) {
         .await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let response_body: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), eq(1));
+    assert_that!(response_body.places.len(), eq(1));
 }
 
 #[db_test]
@@ -87,6 +88,7 @@ async fn test_search_other_languages(context: &DbTestContext) {
         .unwrap();
 
     let payload = json!(OsdmPlaceRequest {
+        restrictions: None,
         place_input: Some(OsdmInitialPlaceInput {
             name: Some(String::from("Seville")),
             geo_position: None,
@@ -102,9 +104,9 @@ async fn test_search_other_languages(context: &DbTestContext) {
         .await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let response_body: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), eq(1));
+    assert_that!(response_body.places.len(), eq(1));
 }
 
 #[db_test]
@@ -146,15 +148,15 @@ async fn test_search_geo_position(context: &DbTestContext) {
         .await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let response_body: OsdmPlaceResponse = response.into_body().into_json().await;
 
     // 20 is the limit on the results
-    assert_that!(api_place.places.len(), eq(2));
+    assert_that!(response_body.places.len(), eq(2));
 
-    let first = &api_place.places[0];
+    let first = &response_body.places[0];
     assert_that!(first.name, eq("London Charing Cross"));
 
-    let second = &api_place.places[1];
+    let second = &response_body.places[1];
     assert_that!(second.name, eq("London Waterloo"));
 }
 
@@ -217,10 +219,10 @@ async fn test_show_ok(context: &DbTestContext) {
     let response = context.app.request("/places/9430007").send().await;
     assert_that!(response.status(), eq(200));
 
-    let api_place: OsdmPlaceResponse = response.into_body().into_json().await;
+    let response_body: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    assert_that!(api_place.places.len(), eq(1));
-    let place = &api_place.places[0];
+    assert_that!(response_body.places.len(), eq(1));
+    let place = &response_body.places[0];
     assert_that!(place.id, eq("urn:uic:stn:9430007"));
     assert_that!(place.object_type, eq("StopPlace"));
     assert_that!(place.name, eq("Test Station"));
