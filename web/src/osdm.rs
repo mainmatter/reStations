@@ -40,8 +40,15 @@ pub struct OsdmInitialPlaceInput {
 
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct OsdmPlaceRestrictions {
+    pub number_of_results: Option<i32>,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OsdmPlaceRequest {
     pub place_input: Option<OsdmInitialPlaceInput>,
+    pub restrictions: Option<OsdmPlaceRestrictions>,
 }
 
 //
