@@ -281,7 +281,7 @@ async fn test_search_unknown_parameters(context: &DbTestContext) {
 async fn test_search_missing_parameters(context: &DbTestContext) {
     // Seed 30 stations in the db so we can test the default
     // set of 20 that POST /places will return if no params are provided
-    for _ in 0..30 {
+    for _ in 0..21 {
         // Generate random station data
         let changeset: stations::StationChangeset = Faker.fake();
 
