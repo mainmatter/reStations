@@ -342,7 +342,7 @@ pub async fn search_by_position(
     .await?;
 
     // Return the closest 20
-    Ok(stations.into_iter().take(20).collect())
+    Ok(stations)
 }
 
 pub async fn search_by_name_and_position(
@@ -414,5 +414,5 @@ pub async fn search_by_name_and_position(
     .await?;
 
     // Return the closest 20
-    Ok(stations.into_iter().take(20).collect())
+    Ok(stations)
 }
