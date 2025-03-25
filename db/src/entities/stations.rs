@@ -110,7 +110,8 @@ pub async fn load_all(
             info_sv,
             info_tr,
             info_zh
-        FROM stations"
+        FROM
+            stations"
     )
     .fetch_all(executor)
     .await?;
@@ -149,8 +150,10 @@ pub async fn load(
             info_sv,
             info_tr,
             info_zh
-        FROM stations
-        WHERE uic = ?",
+        FROM
+            stations
+        WHERE
+            uic = ?",
         id
     )
     .fetch_optional(executor)
@@ -195,8 +198,10 @@ pub async fn search_by_name(
             info_sv,
             info_tr,
             info_zh
-        FROM stations
-        WHERE uic IS NOT NULL
+        FROM
+            stations
+        WHERE
+            uic IS NOT NULL
         AND (
             name like ?
             OR info_de like ?
@@ -284,7 +289,8 @@ pub async fn search_by_position(
             info_sv,
             info_tr,
             info_zh
-        FROM stations
+        FROM
+            stations
         WHERE
             latitude IS NOT NULL
             AND longitude IS NOT NULL
@@ -349,7 +355,8 @@ pub async fn search_by_name_and_position(
             info_sv,
             info_tr,
             info_zh
-        FROM stations
+        FROM
+            stations
         WHERE
             lower(name) LIKE ?
             AND latitude IS NOT NULL
