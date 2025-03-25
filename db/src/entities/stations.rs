@@ -203,45 +203,27 @@ pub async fn search_by_name(
         WHERE
             uic IS NOT NULL
         AND (
-            name like ?
-            OR info_de like ?
-            OR info_en like ?
-            OR info_es like ?
-            OR info_fr like ?
-            OR info_it like ?
-            OR info_nb like ?
-            OR info_nl like ?
-            OR info_cs like ?
-            OR info_da like ?
-            OR info_hu like ?
-            OR info_ja like ?
-            OR info_ko like ?
-            OR info_pl like ?
-            OR info_pt like ?
-            OR info_ru like ?
-            OR info_sv like ?
-            OR info_tr like ?
-            OR info_zh like ?
+            name LIKE $1
+            OR info_de LIKE $1
+            OR info_en LIKE $1
+            OR info_es LIKE $1
+            OR info_fr LIKE $1
+            OR info_it LIKE $1
+            OR info_nb LIKE $1
+            OR info_nl LIKE $1
+            OR info_cs LIKE $1
+            OR info_da LIKE $1
+            OR info_hu LIKE $1
+            OR info_ja LIKE $1
+            OR info_ko LIKE $1
+            OR info_pl LIKE $1
+            OR info_pt LIKE $1
+            OR info_ru LIKE $1
+            OR info_sv LIKE $1
+            OR info_tr LIKE $1
+            OR info_zh LIKE $1
         )",
         pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern,
-        pattern
     )
     .fetch_all(executor)
     .await?;
