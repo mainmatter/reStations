@@ -247,7 +247,7 @@ async fn test_search_geo_position_with_results_limit(context: &DbTestContext) {
 
     let response_body: OsdmPlaceResponse = response.into_body().into_json().await;
 
-    // 20 is the limit on the results
+    // 20 is the default limit on the results
     assert_that!(response_body.places.len(), eq(1));
 
     let first = &response_body.places[0];
@@ -279,6 +279,18 @@ async fn test_search_unknown_parameters(context: &DbTestContext) {
 
 #[db_test]
 async fn test_search_missing_parameters(context: &DbTestContext) {
+    // Seed 30 stations in the db so we can test the default
+    // set of 20 that POST /places will return if no params are provided
+    for _ in 0..30 {
+        // Generate random station data
+        let changeset: stations::StationChangeset = Faker.fake();
+
+        // Insert the station
+        test_helpers::stations::create(changeset.clone(), &context.db_pool)
+            .await
+            .unwrap();
+    }
+
     let payload = r#"
         {
             "unknown": {
@@ -295,6 +307,9 @@ async fn test_search_missing_parameters(context: &DbTestContext) {
         .send()
         .await;
     assert_that!(response.status(), eq(200));
+    let response_body: OsdmPlaceResponse = response.into_body().into_json().await;
+    // 20 is the default limit on the results
+    assert_that!(response_body.places.len(), eq(20));
 }
 
 // GET /places/{id}
