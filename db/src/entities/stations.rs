@@ -153,7 +153,7 @@ pub async fn load_all_within_limit(
         FROM
             stations
         LIMIT
-            $1"#,
+            $1",
         limit
     )
     .fetch_all(executor)
