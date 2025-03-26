@@ -244,8 +244,8 @@ async fn test_search_geo_position_with_results_limit(context: &DbTestContext) {
     // London Charing Cross
     let payload = r#"
         {
-        "restrictions": { "numberOfResults": 1 },
-        "placeInput": {
+            "restrictions": { "numberOfResults": 1 },
+            "placeInput": {
                 "geoPosition": {
                     "latitude": 51.508362,
                     "longitude": -0.123835
