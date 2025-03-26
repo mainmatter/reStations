@@ -8,16 +8,17 @@ COPY ./config ./config
 COPY ./macros ./macros
 COPY ./rust-toolchain.toml .
 COPY ./web ./web
+COPY ./db ./db
 COPY ./stations.sqlite.db ./stations.sqlite.db
 
 RUN adduser \
-  --disabled-password \
-  --gecos "" \
-  --home "/nonexistent" \
-  --shell "/sbin/nologin" \
-  --no-create-home \
-  --uid 10001 \
-  "restations"
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid 10001 \
+    "restations"
 
 RUN rustup toolchain install
 ENV DATABASE_URL=sqlite:stations.sqlite.db
