@@ -54,7 +54,7 @@ curl -X POST -H "Content-Type: application/json" \
 localhost:3000/places
 ```
 
-Will return St Pancras, Liverpool Street and Blackfriars stations:
+This will return St Pancras, Liverpool Street and Blackfriars stations:
 
 ```json
 {
