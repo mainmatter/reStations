@@ -75,6 +75,8 @@ async fn test_search_by_name_ok(context: &DbTestContext) {
     let response_body: OsdmPlaceResponse = response.into_body().into_json().await;
 
     assert_that!(response_body.places.len(), eq(1));
+
+    assert_that!(&response_body.places[0].name, eq("Berlin"));
 }
 
 #[db_test]
@@ -120,6 +122,8 @@ async fn test_search_by_name_with_results_limit_ok(context: &DbTestContext) {
     let response_body: OsdmPlaceResponse = response.into_body().into_json().await;
 
     assert_that!(response_body.places.len(), eq(1));
+
+    assert_that!(&response_body.places[0].name, eq("Überlingen"));
 }
 
 #[db_test]
