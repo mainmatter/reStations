@@ -288,7 +288,7 @@ pub async fn search_by_position(
     //
     // TODO: extract into a constant that is visible
     // and perhaps configurable as an env var
-    let approx_distance_deg = APPROXIMATE_DISTANCE; // Roughly 100km at equator
+    let approx_distance_deg = APPROXIMATE_DISTANCE;
 
     let stations = sqlx::query_as!(
         Station,
