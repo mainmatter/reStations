@@ -106,7 +106,7 @@ This will return St Pancras, Liverpool Street and Blackfriars stations:
 }
 ```
 
-Support for other `restrictions` request fields for POST /places is [in the works]https://github.com/mainmatter/reStations/issues/65).
+Support for other `restrictions` request fields for POST /places is [in the works](https://github.com/mainmatter/reStations/issues/65).
 
 ## Working with reStations
 
