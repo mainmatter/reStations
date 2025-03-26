@@ -22,32 +22,39 @@ curl localhost:3000/places
 
 ### GET /places/{id}
 
-Fetch Lisboa Santa Apolónia station with its UIC:
+Example: fetch Lisboa Santa Apolónia station with its UIC:
 ```bash
 curl localhost:3000/places/8721428
 ```
 
 ### POST /places (search)
 
-Search stations with `Lisboa` in its name.
+#### By name
 
-(Works with both Portuguese and English versions, and in [other languages](https://github.com/trainline-eu/stations/blob/master/src/main/resources/languages.json) as well):
+Example: search stations with `Lisboa` in its name.
+
+Works with both Portuguese and English versions, and in [other languages](https://github.com/trainline-eu/stations/blob/master/src/main/resources/languages.json) as well
+
 ```bash
 curl -X POST -H "Content-Type: application/json" \
 -d '{"placeInput": {"name": "Lisboa"}}' \
 localhost:3000/places
 ```
 
-By geo position:
+#### By geo position:
+
+Example: search stations near Lisboa Santa Apolónia station:
+
 ```bash
 curl -X POST -H "Content-Type: application/json" \
 -d '{"placeInput": {"geoPosition": {"latitude": 38.71387, "longitude": -9.122271}}}' \
 localhost:3000/places
 ```
 
-Restrictions:
+#### Restrictions:
 
-We currently support requesting the number of results to be returned:
+We currently support requesting the number of results to be returned.
+
 ```bash
 curl -X POST -H "Content-Type: application/json" \
 -d '{"placeInput": {"name": "London"}, "restrictions": {"numberOfResults": 3}}' \
@@ -99,7 +106,7 @@ This will return St Pancras, Liverpool Street and Blackfriars stations:
 }
 ```
 
-(Support for other `restrictions` request fields coming soon for POST /places)
+Support for other `restrictions` request fields for POST /places is [in the works]https://github.com/mainmatter/reStations/issues/65).
 
 ## Working with reStations
 
