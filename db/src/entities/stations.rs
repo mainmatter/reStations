@@ -267,6 +267,9 @@ pub async fn search_by_name(
             OR info_tr LIKE $1
             OR info_zh LIKE $1
         )
+        ORDER BY
+            name
+        ASC
         LIMIT
             $2",
         pattern,
