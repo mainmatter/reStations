@@ -81,7 +81,6 @@ async fn test_search_by_name_ok(context: &DbTestContext) {
 
 #[db_test]
 async fn test_search_by_name_with_results_limit_ok(context: &DbTestContext) {
-    // Create two stations so we can test the results limit
     let mut changeset: stations::StationChangeset = Faker.fake();
     changeset.name = String::from("Überlingen");
     test_helpers::stations::create(changeset.clone(), &context.db_pool)
