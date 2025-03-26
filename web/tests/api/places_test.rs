@@ -122,7 +122,7 @@ async fn test_search_by_name_with_results_limit_ok(context: &DbTestContext) {
 
     assert_that!(response_body.places.len(), eq(1));
 
-    assert_that!(&response_body.places[0].name, eq("Überlingen"));
+    assert_that!(&response_body.places[0].name, eq("Berlin-Lichtenberg"));
 }
 
 #[db_test]
