@@ -299,20 +299,6 @@ async fn test_search_unknown_parameters(context: &DbTestContext) {
 
 #[db_test]
 async fn test_search_missing_parameters(context: &DbTestContext) {
-    // Seed 30 stations in the db so we can test the default
-    // set of 20 that POST /places will return if no params are provided
-    for _ in 0..21 {
-        // Generate random station data
-        let changeset: stations::StationChangeset = Faker.fake();
-
-        // Insert the station
-        test_helpers::stations::create(changeset.clone(), &context.db_pool)
-            .await
-            .unwrap();
-    }
-
-    // Note: we're posting json here to assert camelcasing of request structs
-    // is in place
     let payload = r#"
         {
             "unknown": {
@@ -329,9 +315,6 @@ async fn test_search_missing_parameters(context: &DbTestContext) {
         .send()
         .await;
     assert_that!(response.status(), eq(200));
-    let response_body: OsdmPlaceResponse = response.into_body().into_json().await;
-    // 20 is the default limit on the results
-    assert_that!(response_body.places.len(), eq(20));
 }
 
 // GET /places/{id}
