@@ -118,6 +118,49 @@ pub async fn load_all(
     Ok(stations)
 }
 
+pub async fn load_all_within_limit(
+    limit: i32,
+    executor: impl sqlx::Executor<'_, Database = Sqlite>,
+) -> Result<Vec<Station>, crate::Error> {
+    let stations = sqlx::query_as!(
+        Station,
+        "SELECT
+            id,
+            name,
+            uic,
+            latitude,
+            longitude,
+            country,
+            country_hint,
+            info_de,
+            info_en,
+            info_es,
+            info_fr,
+            info_it,
+            info_nb,
+            info_nl,
+            info_cs,
+            info_da,
+            info_hu,
+            info_ja,
+            info_ko,
+            info_pl,
+            info_pt,
+            info_ru,
+            info_sv,
+            info_tr,
+            info_zh
+        FROM
+            stations
+        LIMIT
+            $1",
+        limit
+    )
+    .fetch_all(executor)
+    .await?;
+    Ok(stations)
+}
+
 pub async fn load(
     id: i64,
     executor: impl sqlx::Executor<'_, Database = Sqlite>,
@@ -167,6 +210,7 @@ pub async fn load(
 
 pub async fn search_by_name(
     name: &str,
+    limit: i32,
     executor: impl sqlx::Executor<'_, Database = Sqlite>,
 ) -> Result<Vec<Station>, crate::Error> {
     let pattern = format!("%{}%", name);
@@ -222,8 +266,14 @@ pub async fn search_by_name(
             OR info_sv LIKE $1
             OR info_tr LIKE $1
             OR info_zh LIKE $1
-        )",
+        )
+        ORDER BY
+            name
+        ASC
+        LIMIT
+            $2",
         pattern,
+        limit,
     )
     .fetch_all(executor)
     .await?;
@@ -233,6 +283,7 @@ pub async fn search_by_name(
 pub async fn search_by_position(
     latitude: f64,
     longitude: f64,
+    limit: i32,
     executor: impl sqlx::Executor<'_, Database = Sqlite>,
 ) -> Result<Vec<Station>, crate::Error> {
     // First, get a larger set of candidates using a bounding box
@@ -240,7 +291,7 @@ pub async fn search_by_position(
     //
     // TODO: extract into a constant that is visible
     // and perhaps configurable as an env var
-    let approx_distance_deg = 1.0; // Roughly 100km at equator
+    let approx_distance_deg = APPROXIMATE_DISTANCE;
 
     let stations = sqlx::query_as!(
         Station,
@@ -282,22 +333,26 @@ pub async fn search_by_position(
             ((latitude - $1) * (latitude - $1)) +
             ((longitude - $2) * (longitude - $2))
         ASC
+        LIMIT
+            $4
         "#,
         latitude,
         longitude,
         approx_distance_deg,
+        limit
     )
     .fetch_all(executor)
     .await?;
 
     // Return the closest 20
-    Ok(stations.into_iter().take(20).collect())
+    Ok(stations)
 }
 
 pub async fn search_by_name_and_position(
     name: &str,
     latitude: f64,
     longitude: f64,
+    limit: i32,
     executor: impl sqlx::Executor<'_, Database = Sqlite>,
 ) -> Result<Vec<Station>, crate::Error> {
     // First, get a larger set of candidates using a bounding box
@@ -305,7 +360,7 @@ pub async fn search_by_name_and_position(
     //
     // TODO: extract into a constant that is visible
     // and perhaps configurable as an env var
-    let approx_distance_deg = 1.0; // Roughly 100km at equator
+    let approx_distance_deg = APPROXIMATE_DISTANCE;
 
     let name_pattern = format!("%{}%", name.to_lowercase());
     let stations = sqlx::query_as!(
@@ -349,15 +404,18 @@ pub async fn search_by_name_and_position(
             ((latitude - $2) * (latitude - $2)) +
             ((longitude - $3) * (longitude - $3))
         ASC
+        LIMIT
+            $5
         "#,
         name_pattern,
         latitude,
         longitude,
         approx_distance_deg,
+        limit
     )
     .fetch_all(executor)
     .await?;
 
     // Return the closest 20
-    Ok(stations.into_iter().take(20).collect())
+    Ok(stations)
 }
