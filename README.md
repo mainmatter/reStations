@@ -33,7 +33,7 @@ curl localhost:3000/places/8721428
 
 Example: search stations with `Lisboa` in its name.
 
-Works with both Portuguese and English versions, and in [other languages](https://github.com/trainline-eu/stations/blob/master/src/main/resources/languages.json) as well
+Works with both Portuguese and English versions, and in other languages as well. See [Trainline's data repository](https://github.com/trainline-eu/stations) for the complete list of supported languages.
 
 ```bash
 curl -X POST -H "Content-Type: application/json" \
@@ -41,7 +41,7 @@ curl -X POST -H "Content-Type: application/json" \
 localhost:3000/places
 ```
 
-#### By geo position:
+#### By geo position
 
 Example: search stations near Lisboa Santa Apolónia station:
 
@@ -51,7 +51,7 @@ curl -X POST -H "Content-Type: application/json" \
 localhost:3000/places
 ```
 
-#### Restrictions:
+#### Restrictions
 
 We currently support requesting the number of results to be returned.
 
