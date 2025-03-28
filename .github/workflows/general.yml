@@ -61,4 +61,5 @@ jobs:
 
       - run: |
           docker run -d -p 3000:3000 restations
+          sleep 3
           curl --retry 5 --retry-connrefused localhost:3000/places
