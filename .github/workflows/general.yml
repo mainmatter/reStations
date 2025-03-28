@@ -46,3 +46,19 @@ jobs:
 
       - name: test
         run: cargo test
+
+  test_docker:
+    name: "Smoke-test the Docker image"
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+    
+      - run: ./scripts/sync-data
+    
+      - run: docker build --tag restations .
+
+      - run: |
+          docker run -d restations
+          curl --retry 5 --retry-connrefused localhost:3000/places
