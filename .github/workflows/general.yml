@@ -60,5 +60,5 @@ jobs:
       - run: docker build --tag restations .
 
       - run: |
-          docker run -d restations
+          docker run -d -p 3000:3000 restations
           curl --retry 5 --retry-connrefused localhost:3000/places
