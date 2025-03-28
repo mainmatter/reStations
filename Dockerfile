@@ -1,6 +1,28 @@
-FROM rust:1.85 AS builder
+FROM lukemathwalker/cargo-chef:latest-rust-1.85.1-slim AS chef
 
 WORKDIR /usr/src/restations-builder
+
+FROM chef AS planner
+
+COPY ./Cargo.lock .
+COPY ./Cargo.toml .
+COPY ./cli ./cli
+COPY ./config ./config
+COPY ./macros ./macros
+COPY ./rust-toolchain.toml .
+COPY ./web ./web
+COPY ./db ./db
+COPY ./stations.sqlite.db ./stations.sqlite.db
+
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS builder
+
+COPY --from=planner /usr/src/restations-builder/recipe.json recipe.json
+
+# Build dependencies - this is the caching Docker layer!
+RUN cargo chef cook --release --recipe-path recipe.json
+
 COPY ./Cargo.lock .
 COPY ./Cargo.toml .
 COPY ./cli ./cli
@@ -20,7 +42,6 @@ RUN adduser \
     --uid 10001 \
     "restations"
 
-RUN rustup toolchain install
 ENV DATABASE_URL=sqlite:stations.sqlite.db
 RUN cargo build --bin restations-web --release
 
