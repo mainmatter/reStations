@@ -36,6 +36,6 @@ COPY --chown=restations:restations ./stations.sqlite.db .
 ENV APP_ENVIRONMENT=production
 ENV APP_SERVER__PORT=3000
 ENV APP_SERVER__IP="0.0.0.0"
-ENV APP_DATABASE__URL="${DATABASE_URL}"
+ENV APP_DATABASE__URL="sqlite:stations.sqlite.db"
 ENTRYPOINT ["/usr/local/bin/restations-web"]
 EXPOSE 3000

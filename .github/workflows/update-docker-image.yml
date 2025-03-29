@@ -6,8 +6,17 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  smoke_test:
+    name: "Smoke-test the Docker image"
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/smoke-test
+
+  build:
+    name: "Release new version to Docker Hub"
+    runs-on: ubuntu-latest
+    needs: smoke_test
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -27,7 +36,7 @@ jobs:
       - name: Set build date
         run: echo "BUILD_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      - name: Build and push Docker image
+      - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
