@@ -1,7 +1,8 @@
 FROM lukemathwalker/cargo-chef:latest-rust-1.85.1-slim AS chef
-
 WORKDIR /usr/src/restations-builder
-
+COPY rust-toolchain.toml rust-toolchain.toml
+# Make sure we sync the active toolchain once, if needed.
+RUN rustup toolchain install
 FROM chef AS planner
 
 COPY ./Cargo.lock .
