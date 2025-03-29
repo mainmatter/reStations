@@ -47,25 +47,9 @@ jobs:
       - name: test
         run: cargo test
 
-  test_docker:
+  smoke_test:
     name: "Smoke-test the Docker image"
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-    
-      - run: ./scripts/sync-data
-    
-      - run: docker build --tag restations .
-
-      - name: Smoke-test to ensure correctness
-        run: |
-          docker run -d -p 3000:3000 restations
-          sleep 5
-          # check the server runs at all
-          curl --retry 5 --retry-all-errors localhost:3000/places
-          # check Paris Gare de l’Est exists
-          curl localhost:3000/places/8711300 | jq -e '.places.[0] | select (.name=="Paris Gare de l’Est")'
-          # check Paris Gare de l’Est is found for correct location
-          curl -X POST -H "Content-Type: application/json" -d '{"restrictions": {"numberOfResults": 3}, "placeInput": {"geoPosition": {"latitude": 48.877, "longitude": 2.358}}}' localhost:3000/places | jq -e '.places.[] | select (.name=="Paris Gare de l’Est")'
+      - uses: ./.github/actions/smoke-test
