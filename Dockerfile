@@ -5,15 +5,7 @@ COPY rust-toolchain.toml rust-toolchain.toml
 RUN rustup toolchain install
 FROM chef AS planner
 
-COPY ./Cargo.lock .
-COPY ./Cargo.toml .
-COPY ./cli ./cli
-COPY ./config ./config
-COPY ./macros ./macros
-COPY ./rust-toolchain.toml .
-COPY ./web ./web
-COPY ./db ./db
-COPY ./stations.sqlite.db ./stations.sqlite.db
+COPY . .
 
 RUN cargo chef prepare --recipe-path recipe.json
 
