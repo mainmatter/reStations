@@ -16,15 +16,7 @@ COPY --from=planner /usr/src/restations-builder/recipe.json recipe.json
 # Build dependencies - this is the caching Docker layer!
 RUN cargo chef cook --release --recipe-path recipe.json
 
-COPY ./Cargo.lock .
-COPY ./Cargo.toml .
-COPY ./cli ./cli
-COPY ./config ./config
-COPY ./macros ./macros
-COPY ./rust-toolchain.toml .
-COPY ./web ./web
-COPY ./db ./db
-COPY ./stations.sqlite.db ./stations.sqlite.db
+COPY . .
 
 RUN adduser \
     --disabled-password \
