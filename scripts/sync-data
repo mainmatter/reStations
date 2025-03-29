@@ -39,8 +39,6 @@ CREATE TABLE stations (
     leoexpress_is_enabled BOOLEAN NOT NULL,
     obb_id TEXT,
     obb_is_enabled BOOLEAN NOT NULL,
-    ouigo_id TEXT,
-    ouigo_is_enabled BOOLEAN NOT NULL,
     trenitalia_id TEXT,
     trenitalia_is_enabled BOOLEAN NOT NULL,
     trenitalia_rtvt_id TEXT,
@@ -119,8 +117,6 @@ ALTER TABLE stations DROP COLUMN leoexpress_id;
 ALTER TABLE stations DROP COLUMN leoexpress_is_enabled;
 ALTER TABLE stations DROP COLUMN obb_id;
 ALTER TABLE stations DROP COLUMN obb_is_enabled;
-ALTER TABLE stations DROP COLUMN ouigo_id;
-ALTER TABLE stations DROP COLUMN ouigo_is_enabled;
 ALTER TABLE stations DROP COLUMN trenitalia_id;
 ALTER TABLE stations DROP COLUMN trenitalia_is_enabled;
 ALTER TABLE stations DROP COLUMN trenitalia_rtvt_id;
