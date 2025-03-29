@@ -1,0 +1,8 @@
+.cargo/
+.github/
+scripts/
+target/
+.env
+.env.test
+.git
+.gitignore
