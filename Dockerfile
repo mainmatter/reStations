@@ -30,7 +30,7 @@ RUN adduser \
 ENV DATABASE_URL=sqlite:stations.sqlite.db
 RUN cargo build --bin restations-web --release
 
-FROM rust:1.85-slim AS runtime
+FROM debian:bookworm-slim AS runtime
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
