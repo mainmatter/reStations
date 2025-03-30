@@ -18,6 +18,11 @@ RUN cargo chef cook --release --recipe-path recipe.json
 
 COPY . .
 
+ENV DATABASE_URL=sqlite:stations.sqlite.db
+RUN cargo build --bin restations-web --release
+
+FROM debian:bookworm-slim AS runtime
+
 RUN adduser \
     --disabled-password \
     --gecos "" \
@@ -27,13 +32,6 @@ RUN adduser \
     --uid 10001 \
     "restations"
 
-ENV DATABASE_URL=sqlite:stations.sqlite.db
-RUN cargo build --bin restations-web --release
-
-FROM debian:bookworm-slim AS runtime
-
-COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /etc/group /etc/group
 USER restations:restations
 
 COPY --from=builder --chown=restations:restations /usr/src/restations-builder/target/release/restations-web /usr/local/bin/restations-web
