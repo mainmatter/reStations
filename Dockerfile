@@ -37,6 +37,8 @@ USER restations:restations
 COPY --from=builder --chown=restations:restations /usr/src/restations-builder/target/release/restations-web /usr/local/bin/restations-web
 COPY --chown=restations:restations ./stations.sqlite.db .
 
+# TODO: this is not actually needed in production – need to find a fix that allow us to remove this later
+ENV APP_SOURCE_DATA_FILE=production
 ENV APP_ENVIRONMENT=production
 ENV APP_SERVER__PORT=3000
 ENV APP_SERVER__IP="0.0.0.0"
