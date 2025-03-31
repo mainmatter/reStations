@@ -2,10 +2,17 @@ use anyhow::{anyhow, Context};
 use clap::{Parser, Subcommand};
 use guppy::{Version, VersionReq};
 use restations_cli::util::ui::UI;
+use restations_config::DatabaseConfig;
 use restations_config::{load_config, parse_env, Config, Environment};
+use sqlx::sqlite::SqliteConnectOptions;
+use sqlx::ConnectOptions;
 use std::path::PathBuf;
 use std::process::{ExitCode, Stdio};
-use tokio::io::{stdin, AsyncBufReadExt};
+use tokio::{
+    fs::{remove_file, File},
+    io::{stdin, AsyncBufReadExt},
+};
+use url::Url;
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -43,6 +50,10 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    #[command(about = "Drop the database")]
+    Drop,
+    #[command(about = "Create the database")]
+    Create,
     #[command(about = "Generate query metadata to support offline compile-time verification")]
     Prepare,
 }
@@ -53,6 +64,22 @@ async fn cli(ui: &mut UI<'_>, cli: Cli) -> Result<(), anyhow::Error> {
     match config {
         Ok(config) => {
             match cli.command {
+                Commands::Drop => {
+                    ui.info(&format!("Dropping {} database…", &cli.env));
+                    let db_name = drop(&config.database)
+                        .await
+                        .context("Could not drop database!")?;
+                    ui.success(&format!("Dropped database {} successfully.", db_name));
+                    Ok(())
+                }
+                Commands::Create => {
+                    ui.info(&format!("Creating {} database…", &cli.env));
+                    let db_name = create(&config.database)
+                        .await
+                        .context("Could not create database!")?;
+                    ui.success(&format!("Created database {} successfully.", db_name));
+                    Ok(())
+                }
                 Commands::Prepare => {
                     if let Err(e) = ensure_sqlx_cli_installed(ui).await {
                         return Err(e.context("Error ensuring sqlx-cli is installed!"));
@@ -89,6 +116,29 @@ async fn cli(ui: &mut UI<'_>, cli: Cli) -> Result<(), anyhow::Error> {
         }
         Err(e) => Err(e.context("Could not load config!")),
     }
+}
+
+async fn drop(config: &DatabaseConfig) -> Result<String, anyhow::Error> {
+    let db_config = get_db_config(config);
+    let db_file_name = db_config.get_filename();
+    remove_file(db_file_name)
+        .await
+        .context("Failed to remove database file!")?;
+    Ok(db_file_name.to_string_lossy().to_string())
+}
+
+async fn create(config: &DatabaseConfig) -> Result<String, anyhow::Error> {
+    let db_config = get_db_config(config);
+    let db_file_name = db_config.get_filename();
+    File::create_new(db_file_name)
+        .await
+        .context("Failed to create database file!")?;
+    Ok(db_file_name.to_string_lossy().to_string())
+}
+
+fn get_db_config(config: &DatabaseConfig) -> SqliteConnectOptions {
+    let db_url = Url::parse(&config.url).expect("Invalid DATABASE_URL!");
+    ConnectOptions::from_url(&db_url).expect("Invalid DATABASE_URL!")
 }
 
 fn get_cargo_path() -> Result<String, anyhow::Error> {
