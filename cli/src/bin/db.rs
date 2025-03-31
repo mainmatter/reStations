@@ -5,8 +5,12 @@ use restations_cli::util::ui::UI;
 use restations_config::DatabaseConfig;
 use restations_config::{load_config, parse_env, Config, Environment};
 use sqlx::sqlite::SqliteConnectOptions;
-use sqlx::ConnectOptions;
-use std::path::PathBuf;
+use sqlx::{
+    migrate::{Migrate, Migrator},
+    ConnectOptions,
+};
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 use std::process::{ExitCode, Stdio};
 use tokio::{
     fs::{remove_file, File},
@@ -54,6 +58,8 @@ enum Commands {
     Drop,
     #[command(about = "Create the database")]
     Create,
+    #[command(about = "Migrate the database")]
+    Migrate,
     #[command(about = "Generate query metadata to support offline compile-time verification")]
     Prepare,
 }
@@ -78,6 +84,17 @@ async fn cli(ui: &mut UI<'_>, cli: Cli) -> Result<(), anyhow::Error> {
                         .await
                         .context("Could not create database!")?;
                     ui.success(&format!("Created database {} successfully.", db_name));
+                    Ok(())
+                }
+                Commands::Migrate => {
+                    ui.info(&format!("Migrating {} database…", &cli.env));
+                    ui.indent();
+                    let migrations = migrate(ui, &config.database)
+                        .await
+                        .context("Could not migrate database!");
+                    ui.outdent();
+                    let migrations = migrations?;
+                    ui.success(&format!("{} migrations applied.", migrations));
                     Ok(())
                 }
                 Commands::Prepare => {
@@ -134,6 +151,45 @@ async fn create(config: &DatabaseConfig) -> Result<String, anyhow::Error> {
         .await
         .context("Failed to create database file!")?;
     Ok(db_file_name.to_string_lossy().to_string())
+}
+
+async fn migrate(ui: &mut UI<'_>, config: &DatabaseConfig) -> Result<i32, anyhow::Error> {
+    let db_config = get_db_config(config);
+    let migrations_path = db_package_root()?.join("migrations");
+    let migrator = Migrator::new(Path::new(&migrations_path))
+        .await
+        .context("Failed to create migrator!")?;
+    let mut connection = db_config
+        .connect()
+        .await
+        .context("Failed to connect to database!")?;
+
+    connection
+        .ensure_migrations_table()
+        .await
+        .context("Failed to ensure migrations table!")?;
+
+    let applied_migrations: HashMap<_, _> = connection
+        .list_applied_migrations()
+        .await
+        .context("Failed to list applied migrations!")?
+        .into_iter()
+        .map(|m| (m.version, m))
+        .collect();
+
+    let mut applied = 0;
+    for migration in migrator.iter() {
+        if !applied_migrations.contains_key(&migration.version) {
+            connection
+                .apply(migration)
+                .await
+                .context("Failed to apply migration {}!")?;
+            ui.log(&format!("Applied migration {}.", migration.version));
+            applied += 1;
+        }
+    }
+
+    Ok(applied)
 }
 
 fn get_db_config(config: &DatabaseConfig) -> SqliteConnectOptions {
