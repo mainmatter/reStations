@@ -29,7 +29,10 @@ jobs:
         with:
           components: clippy
 
-      - run: ./scripts/sync-data
+      - name: prepare database
+        run: |
+          cargo db create
+          cargo db migrate
 
       - name: clippy
         run: cargo clippy --all-targets -- -D warnings
@@ -42,7 +45,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions-rust-lang/setup-rust-toolchain@v1
 
-      - run: ./scripts/sync-data
+      - name: prepare database
+        run: |
+          cargo db create
+          cargo db migrate
+
+      - name: prepare test database
+        run: |
+          cargo db create -e test
+          cargo db migrate -e test
 
       - name: test
         run: cargo test

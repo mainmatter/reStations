@@ -30,8 +30,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Sync data
-        run: ./scripts/sync-data
+      - name: prepare database
+        run: |
+          cargo db create
+          cargo db migrate
+          cargo db sync
 
       - name: Set build date
         run: echo "BUILD_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV

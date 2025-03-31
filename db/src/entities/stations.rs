@@ -1,6 +1,6 @@
 #[cfg(feature = "test-helpers")]
 use fake::{
-    faker::{address::en::*, boolean::en::Boolean, number::en::NumberWithFormat},
+    faker::{address::en::*, number::en::NumberWithFormat},
     Dummy,
 };
 use serde::Deserialize;
@@ -59,7 +59,6 @@ pub struct StationChangeset {
     pub longitude: Option<f64>,
     #[cfg_attr(feature = "test-helpers", dummy(faker = "CountryName()"))]
     pub country: Option<String>,
-    #[cfg_attr(feature = "test-helpers", dummy(faker = "Boolean(1)"))]
     pub info_de: Option<String>,
     pub info_en: Option<String>,
     pub info_es: Option<String>,

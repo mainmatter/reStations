@@ -5,7 +5,6 @@ CREATE TABLE stations (
     latitude REAL,
     longitude REAL,
     country TEXT,
-    same_as TEXT,
     info_de TEXT,
     info_en TEXT,
     info_es TEXT,
@@ -23,7 +22,7 @@ CREATE TABLE stations (
     info_ru TEXT,
     info_sv TEXT,
     info_tr TEXT,
-    info_zh TEXT,
+    info_zh TEXT
 );
 
 CREATE UNIQUE INDEX stations_id_idx ON stations (id);

@@ -4,7 +4,7 @@ use axum::{
 };
 use fake::{Fake, Faker};
 use googletest::prelude::{assert_that, eq};
-use restations_db::{entities::stations, test_helpers};
+use restations_db::{entities::stations, test_helpers::stations::create};
 use restations_macros::db_test;
 use restations_web::osdm::{
     OsdmInitialPlaceInput, OsdmPlaceRequest, OsdmPlaceResponse, OsdmPlaceRestrictions, OsdmProblem,
@@ -27,9 +27,7 @@ async fn test_list_empty(context: &DbTestContext) {
 #[db_test]
 async fn test_list_ok(context: &DbTestContext) {
     let changeset: stations::StationChangeset = Faker.fake();
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
     let response = context.app.request("/places").send().await;
     assert_that!(response.status(), eq(200));
 
@@ -45,15 +43,11 @@ async fn test_list_ok(context: &DbTestContext) {
 async fn test_search_by_name_ok(context: &DbTestContext) {
     let mut changeset: stations::StationChangeset = Faker.fake();
     changeset.name = String::from("Berlin");
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
 
     let mut changeset: stations::StationChangeset = Faker.fake();
     changeset.name = String::from("Bremen");
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
 
     let payload = json!(OsdmPlaceRequest {
         restrictions: None,
@@ -83,21 +77,15 @@ async fn test_search_by_name_ok(context: &DbTestContext) {
 async fn test_search_by_name_with_results_limit_ok(context: &DbTestContext) {
     let mut changeset: stations::StationChangeset = Faker.fake();
     changeset.name = String::from("Überlingen");
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
 
     let mut changeset: stations::StationChangeset = Faker.fake();
     changeset.name = String::from("Berlin-Lichtenberg");
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
 
     let mut changeset: stations::StationChangeset = Faker.fake();
     changeset.name = String::from("Bremen");
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
 
     let payload = json!(OsdmPlaceRequest {
         restrictions: Some(OsdmPlaceRestrictions {
@@ -130,15 +118,11 @@ async fn test_search_other_languages(context: &DbTestContext) {
     let mut changeset: stations::StationChangeset = Faker.fake();
     changeset.name = String::from("Sevilla");
     changeset.info_fr = Some(String::from("Seville"));
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
 
     let mut changeset: stations::StationChangeset = Faker.fake();
     changeset.name = String::from("Berlin");
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
 
     let payload = json!(OsdmPlaceRequest {
         restrictions: None,
@@ -171,17 +155,13 @@ async fn test_search_geo_position(context: &DbTestContext) {
     changeset.name = String::from("London Charing Cross");
     changeset.latitude = Some(51.507);
     changeset.longitude = Some(-0.123);
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
 
     let mut changeset: stations::StationChangeset = Faker.fake();
     changeset.name = String::from("London Waterloo");
     changeset.latitude = Some(51.503);
     changeset.longitude = Some(-0.113);
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
 
     // London Charing Cross
     //
@@ -225,17 +205,13 @@ async fn test_search_geo_position_with_results_limit(context: &DbTestContext) {
     changeset.name = String::from("London Charing Cross");
     changeset.latitude = Some(51.507);
     changeset.longitude = Some(-0.123);
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
 
     let mut changeset: stations::StationChangeset = Faker.fake();
     changeset.name = String::from("London Waterloo");
     changeset.latitude = Some(51.503);
     changeset.longitude = Some(-0.113);
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
 
     // Note: we're posting json here to assert camelcasing of request structs
     // is in place
@@ -327,9 +303,7 @@ async fn test_show_ok(context: &DbTestContext) {
     let mut changeset: stations::StationChangeset = Faker.fake();
     changeset.name = String::from("Test Station");
     changeset.uic = String::from("9430007");
-    test_helpers::stations::create(changeset.clone(), &context.db_pool)
-        .await
-        .unwrap();
+    create(changeset.clone(), &context.db_pool).await.unwrap();
 
     let response = context.app.request("/places/9430007").send().await;
     assert_that!(response.status(), eq(200));

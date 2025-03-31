@@ -23,7 +23,7 @@ pub struct Config {
     pub server: ServerConfig,
     /// the database configuration: [`DatabaseConfig`]
     pub database: DatabaseConfig,
-    // add your config settings here…
+    pub source_data_file: String,
 }
 
 /// The server configuration.

@@ -1,1 +1,1 @@
-# add default config settings here…
+source_data_file= "https://raw.githubusercontent.com/trainline-eu/stations/refs/heads/master/stations.csv"
