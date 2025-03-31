@@ -18,7 +18,6 @@ CREATE TABLE stations (
     is_main_station BOOLEAN NOT NULL,
     is_airport BOOLEAN NOT NULL,
     is_suggestable BOOLEAN NOT NULL,
-    country_hint BOOLEAN NOT NULL,
     main_station_hint BOOLEAN NOT NULL,
     sncf_id TEXT,
     sncf_tvs_id TEXT,
