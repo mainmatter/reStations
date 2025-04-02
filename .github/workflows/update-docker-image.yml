@@ -33,7 +33,6 @@ jobs:
       - name: prepare database
         run: |
           cargo db create
-          cargo db migrate
           cargo db sync
 
       - name: Set build date

@@ -32,7 +32,6 @@ jobs:
       - name: prepare database
         run: |
           cargo db create
-          cargo db migrate
 
       - name: clippy
         run: cargo clippy --all-targets -- -D warnings
@@ -48,12 +47,10 @@ jobs:
       - name: prepare database
         run: |
           cargo db create
-          cargo db migrate
 
       - name: prepare test database
         run: |
           cargo db create -e test
-          cargo db migrate -e test
 
       - name: test
         run: cargo test
