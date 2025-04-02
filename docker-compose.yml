@@ -1,0 +1,17 @@
+services:
+  nominatim:
+    image: "mediagis/nominatim:5.1"
+    restart: always
+    environment:
+      PBF_URL: "https://download.geofabrik.de/europe/monaco-latest.osm.pbf"
+      REPLICATION_URL: "https://download.geofabrik.de/europe-updates/"
+      REVERSE_ONLY: true
+      IMPORT_GB_POSTCODES: true
+    volumes:
+      - db:/var/lib/postgresql/16/main
+      - flatnode:/nominatim/flatnode
+    ports:
+      - 8080:8080
+volumes:
+  db:
+  flatnode:

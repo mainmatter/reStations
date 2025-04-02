@@ -197,6 +197,9 @@ async fn sync(config: &Config) -> Result<i32, anyhow::Error> {
         let record = record.context("Failed to read record from CSV file!")?;
         let station = prepare_station(record, i)?;
 
+        // TODO: get name (all languages), country name (all languages), country code, postcode, city (all languages), display name (all languages), street (all languages)
+        // localhost:8080/reverse?format=jsonv2&lat=48.876742&lon=2.358424&addressdetails=1&namedetails=1
+
         sqlx::query(
             r#"
             INSERT INTO
