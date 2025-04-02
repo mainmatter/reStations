@@ -174,24 +174,6 @@ struct StationRecord {
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
     pub country: Option<String>,
-    pub info_de: Option<String>,
-    pub info_en: Option<String>,
-    pub info_es: Option<String>,
-    pub info_fr: Option<String>,
-    pub info_it: Option<String>,
-    pub info_nb: Option<String>,
-    pub info_nl: Option<String>,
-    pub info_cs: Option<String>,
-    pub info_da: Option<String>,
-    pub info_hu: Option<String>,
-    pub info_ja: Option<String>,
-    pub info_ko: Option<String>,
-    pub info_pl: Option<String>,
-    pub info_pt: Option<String>,
-    pub info_ru: Option<String>,
-    pub info_sv: Option<String>,
-    pub info_tr: Option<String>,
-    pub info_zh: Option<String>,
 }
 
 async fn sync(config: &Config) -> Result<i32, anyhow::Error> {
@@ -225,28 +207,10 @@ async fn sync(config: &Config) -> Result<i32, anyhow::Error> {
                 uic,
                 latitude,
                 longitude,
-                country,
-                info_de,
-                info_en,
-                info_es,
-                info_fr,
-                info_it,
-                info_nb,
-                info_nl,
-                info_cs,
-                info_da,
-                info_hu,
-                info_ja,
-                info_ko,
-                info_pl,
-                info_pt,
-                info_ru,
-                info_sv,
-                info_tr,
-                info_zh
+                country
             )
             VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?
             )
             "#,
         )
@@ -256,24 +220,6 @@ async fn sync(config: &Config) -> Result<i32, anyhow::Error> {
         .bind(station.latitude)
         .bind(station.longitude)
         .bind(station.country)
-        .bind(station.info_de)
-        .bind(station.info_en)
-        .bind(station.info_es)
-        .bind(station.info_fr)
-        .bind(station.info_it)
-        .bind(station.info_nb)
-        .bind(station.info_nl)
-        .bind(station.info_cs)
-        .bind(station.info_da)
-        .bind(station.info_hu)
-        .bind(station.info_ja)
-        .bind(station.info_ko)
-        .bind(station.info_pl)
-        .bind(station.info_pt)
-        .bind(station.info_ru)
-        .bind(station.info_sv)
-        .bind(station.info_tr)
-        .bind(station.info_zh)
         .execute(&mut conn)
         .await?;
         i += 1;
@@ -306,29 +252,9 @@ fn prepare_station(record: StringRecord, i: i32) -> Result<StationRecord, anyhow
     let lat = record.get(5);
     let lon = record.get(6);
     let country = record.get(8);
-    let info_de = record.get(54);
-    let info_en = record.get(55);
-    let info_es = record.get(56);
-    let info_fr = record.get(57);
-    let info_it = record.get(58);
-    let info_nb = record.get(59);
-    let info_nl = record.get(60);
-    let info_cs = record.get(61);
-    let info_da = record.get(62);
-    let info_hu = record.get(63);
-    let info_ja = record.get(64);
-    let info_ko = record.get(65);
-    let info_pl = record.get(66);
-    let info_pt = record.get(67);
-    let info_ru = record.get(68);
-    let info_sv = record.get(69);
-    let info_tr = record.get(70);
-    let info_zh = record.get(71);
 
     match (
-        id, name, uic, lat, lon, country, info_de, info_en, info_es, info_fr, info_it, info_nb,
-        info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv,
-        info_tr, info_zh,
+        id, name, uic, lat, lon, country
     ) {
         (
             Some(id),
@@ -337,24 +263,6 @@ fn prepare_station(record: StringRecord, i: i32) -> Result<StationRecord, anyhow
             Some(lat),
             Some(lon),
             Some(country),
-            Some(info_de),
-            Some(info_en),
-            Some(info_es),
-            Some(info_fr),
-            Some(info_it),
-            Some(info_nb),
-            Some(info_nl),
-            Some(info_cs),
-            Some(info_da),
-            Some(info_hu),
-            Some(info_ja),
-            Some(info_ko),
-            Some(info_pl),
-            Some(info_pt),
-            Some(info_ru),
-            Some(info_sv),
-            Some(info_tr),
-            Some(info_zh),
         ) => {
             let id = id
                 .parse::<i64>()
@@ -383,24 +291,6 @@ fn prepare_station(record: StringRecord, i: i32) -> Result<StationRecord, anyhow
                 latitude: lat,
                 longitude: lon,
                 country: prepare_csv_string(country),
-                info_de: prepare_csv_string(info_de),
-                info_en: prepare_csv_string(info_en),
-                info_es: prepare_csv_string(info_es),
-                info_fr: prepare_csv_string(info_fr),
-                info_it: prepare_csv_string(info_it),
-                info_nb: prepare_csv_string(info_nb),
-                info_nl: prepare_csv_string(info_nl),
-                info_cs: prepare_csv_string(info_cs),
-                info_da: prepare_csv_string(info_da),
-                info_hu: prepare_csv_string(info_hu),
-                info_ja: prepare_csv_string(info_ja),
-                info_ko: prepare_csv_string(info_ko),
-                info_pl: prepare_csv_string(info_pl),
-                info_pt: prepare_csv_string(info_pt),
-                info_ru: prepare_csv_string(info_ru),
-                info_sv: prepare_csv_string(info_sv),
-                info_tr: prepare_csv_string(info_tr),
-                info_zh: prepare_csv_string(info_zh),
             })
         }
         _ => Err(anyhow!("Invalid data in line {}!", i)),
