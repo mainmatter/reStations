@@ -114,7 +114,6 @@ Support for other `restrictions` request fields for POST /places is [in the work
 
 ```bash
 cargo db create
-cargo db migrate
 ```
 
 This is important since reStations uses sqlx which does compile-time checks on the database schema and needs the `DATABASE_URL` environment variable to be able to connect to the database.
@@ -164,7 +163,6 @@ Running the application tests:
 
 ```bash
 cargo db create -e test
-cargo db migrate -e test
 cargo test
 ```
 

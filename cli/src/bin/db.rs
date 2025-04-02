@@ -8,15 +8,11 @@ use restations_cli::util::ui::UI;
 use restations_config::DatabaseConfig;
 use restations_config::{load_config, parse_env, Config, Environment};
 use sqlx::sqlite::{SqliteConnectOptions, SqliteConnection};
-use sqlx::{
-    migrate::{Migrate, Migrator},
-    ConnectOptions, Connection,
-};
-use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use sqlx::{ConnectOptions, Connection};
+use std::path::PathBuf;
 use std::process::{ExitCode, Stdio};
 use tokio::{
-    fs::{remove_file, File},
+    fs::{read_to_string, remove_file, File},
     io::{stdin, AsyncBufReadExt},
 };
 use tokio_stream::StreamExt;
@@ -62,8 +58,6 @@ enum Commands {
     Drop,
     #[command(about = "Create the database")]
     Create,
-    #[command(about = "Migrate the database")]
-    Migrate,
     #[command(about = "Synchronize the database with the source data")]
     Sync,
     #[command(about = "Generate query metadata to support offline compile-time verification")]
@@ -90,17 +84,6 @@ async fn cli(ui: &mut UI<'_>, cli: Cli) -> Result<(), anyhow::Error> {
                         .await
                         .context("Could not create database!")?;
                     ui.success(&format!("Created database {} successfully.", db_name));
-                    Ok(())
-                }
-                Commands::Migrate => {
-                    ui.info(&format!("Migrating {} database…", &cli.env));
-                    ui.indent();
-                    let migrations = migrate(ui, &config.database)
-                        .await
-                        .context("Could not migrate database!");
-                    ui.outdent();
-                    let migrations = migrations?;
-                    ui.success(&format!("{} migrations applied.", migrations));
                     Ok(())
                 }
                 Commands::Sync => {
@@ -167,46 +150,21 @@ async fn create(config: &DatabaseConfig) -> Result<String, anyhow::Error> {
     File::create_new(db_file_name)
         .await
         .context("Failed to create database file!")?;
+
+    let mut connection = get_db_client(config).await;
+
+    let db_package_root = db_package_root().context("Failed to get db package root!")?;
+    let schema_file = PathBuf::from_iter([db_package_root, "schema.sql".into()]);
+    let statements = read_to_string(schema_file)
+        .await
+        .expect("Could not read schema – make sure db/schema.sql exists!");
+
+    sqlx::query(statements.as_str())
+        .execute(&mut connection)
+        .await
+        .context("Failed to create schema!")?;
+
     Ok(db_file_name.to_string_lossy().to_string())
-}
-
-async fn migrate(ui: &mut UI<'_>, config: &DatabaseConfig) -> Result<i32, anyhow::Error> {
-    let db_config = get_db_config(config);
-    let migrations_path = db_package_root()?.join("migrations");
-    let migrator = Migrator::new(Path::new(&migrations_path))
-        .await
-        .context("Failed to create migrator!")?;
-    let mut connection = db_config
-        .connect()
-        .await
-        .context("Failed to connect to database!")?;
-
-    connection
-        .ensure_migrations_table()
-        .await
-        .context("Failed to ensure migrations table!")?;
-
-    let applied_migrations: HashMap<_, _> = connection
-        .list_applied_migrations()
-        .await
-        .context("Failed to list applied migrations!")?
-        .into_iter()
-        .map(|m| (m.version, m))
-        .collect();
-
-    let mut applied = 0;
-    for migration in migrator.iter() {
-        if !applied_migrations.contains_key(&migration.version) {
-            connection
-                .apply(migration)
-                .await
-                .context(format!("Failed to apply migration {}!", migration.version))?;
-            ui.log(&format!("Applied migration {}.", migration.version));
-            applied += 1;
-        }
-    }
-
-    Ok(applied)
 }
 
 struct StationRecord {
@@ -250,10 +208,7 @@ async fn sync(config: &Config) -> Result<i32, anyhow::Error> {
         .create_reader(reader);
     let mut records = rdr.records();
 
-    let db_config = get_db_config(&config.database);
-    let mut conn = SqliteConnection::connect_with(&db_config)
-        .await
-        .expect("Could not connect to database!");
+    let mut conn = get_db_client(&config.database).await;
 
     let mut i = 0;
     while let Some(record) = records.next().await {
@@ -330,6 +285,13 @@ async fn sync(config: &Config) -> Result<i32, anyhow::Error> {
 fn get_db_config(config: &DatabaseConfig) -> SqliteConnectOptions {
     let db_url = Url::parse(&config.url).expect("Invalid DATABASE_URL!");
     ConnectOptions::from_url(&db_url).expect("Invalid DATABASE_URL!")
+}
+
+async fn get_db_client(config: &DatabaseConfig) -> SqliteConnection {
+    let db_config = get_db_config(config);
+    let connection = SqliteConnection::connect_with(&db_config).await.unwrap();
+
+    connection
 }
 
 fn get_cargo_path() -> Result<String, anyhow::Error> {
