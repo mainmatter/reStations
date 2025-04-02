@@ -116,8 +116,7 @@ async fn test_search_by_name_with_results_limit_ok(context: &DbTestContext) {
 #[db_test]
 async fn test_search_other_languages(context: &DbTestContext) {
     let mut changeset: stations::StationChangeset = Faker.fake();
-    changeset.name = String::from("Sevilla");
-    changeset.info_fr = Some(String::from("Seville"));
+    changeset.name = String::from("Seville");
     create(changeset.clone(), &context.db_pool).await.unwrap();
 
     let mut changeset: stations::StationChangeset = Faker.fake();

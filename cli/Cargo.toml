@@ -25,7 +25,8 @@ guppy = "0.17"
 include_dir = "0.7"
 liquid = "~0.26"
 restations-config = { path = "../config" }
-reqwest = { version = "0.12", features = ["stream"] }
+reqwest = { version = "0.12", features = ["stream", "json"] }
+serde_json = "1.0"
 sqlx = { version = "0.8", features = [
     "runtime-tokio",
     "tls-rustls",

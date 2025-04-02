@@ -20,24 +20,6 @@ pub struct Station {
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
     pub country: Option<String>,
-    pub info_de: Option<String>,
-    pub info_en: Option<String>,
-    pub info_es: Option<String>,
-    pub info_fr: Option<String>,
-    pub info_it: Option<String>,
-    pub info_nb: Option<String>,
-    pub info_nl: Option<String>,
-    pub info_cs: Option<String>,
-    pub info_da: Option<String>,
-    pub info_hu: Option<String>,
-    pub info_ja: Option<String>,
-    pub info_ko: Option<String>,
-    pub info_pl: Option<String>,
-    pub info_pt: Option<String>,
-    pub info_ru: Option<String>,
-    pub info_sv: Option<String>,
-    pub info_tr: Option<String>,
-    pub info_zh: Option<String>,
 }
 
 #[derive(Deserialize, Validate, Clone)]
@@ -59,24 +41,6 @@ pub struct StationChangeset {
     pub longitude: Option<f64>,
     #[cfg_attr(feature = "test-helpers", dummy(faker = "CountryName()"))]
     pub country: Option<String>,
-    pub info_de: Option<String>,
-    pub info_en: Option<String>,
-    pub info_es: Option<String>,
-    pub info_fr: Option<String>,
-    pub info_it: Option<String>,
-    pub info_nb: Option<String>,
-    pub info_nl: Option<String>,
-    pub info_cs: Option<String>,
-    pub info_da: Option<String>,
-    pub info_hu: Option<String>,
-    pub info_ja: Option<String>,
-    pub info_ko: Option<String>,
-    pub info_pl: Option<String>,
-    pub info_pt: Option<String>,
-    pub info_ru: Option<String>,
-    pub info_sv: Option<String>,
-    pub info_tr: Option<String>,
-    pub info_zh: Option<String>,
 }
 
 pub async fn load_all(
@@ -90,25 +54,7 @@ pub async fn load_all(
             uic,
             latitude,
             longitude,
-            country,
-            info_de,
-            info_en,
-            info_es,
-            info_fr,
-            info_it,
-            info_nb,
-            info_nl,
-            info_cs,
-            info_da,
-            info_hu,
-            info_ja,
-            info_ko,
-            info_pl,
-            info_pt,
-            info_ru,
-            info_sv,
-            info_tr,
-            info_zh
+            country
         FROM
             stations"
     )
@@ -129,25 +75,7 @@ pub async fn load_all_within_limit(
             uic,
             latitude,
             longitude,
-            country,
-            info_de,
-            info_en,
-            info_es,
-            info_fr,
-            info_it,
-            info_nb,
-            info_nl,
-            info_cs,
-            info_da,
-            info_hu,
-            info_ja,
-            info_ko,
-            info_pl,
-            info_pt,
-            info_ru,
-            info_sv,
-            info_tr,
-            info_zh
+            country
         FROM
             stations
         LIMIT
@@ -171,25 +99,7 @@ pub async fn load(
             uic,
             latitude,
             longitude,
-            country,
-            info_de,
-            info_en,
-            info_es,
-            info_fr,
-            info_it,
-            info_nb,
-            info_nl,
-            info_cs,
-            info_da,
-            info_hu,
-            info_ja,
-            info_ko,
-            info_pl,
-            info_pt,
-            info_ru,
-            info_sv,
-            info_tr,
-            info_zh
+            country
         FROM
             stations
         WHERE
@@ -219,49 +129,13 @@ pub async fn search_by_name(
             uic,
             latitude,
             longitude,
-            country,
-            info_de,
-            info_en,
-            info_es,
-            info_fr,
-            info_it,
-            info_nb,
-            info_nl,
-            info_cs,
-            info_da,
-            info_hu,
-            info_ja,
-            info_ko,
-            info_pl,
-            info_pt,
-            info_ru,
-            info_sv,
-            info_tr,
-            info_zh
+            country
         FROM
             stations
         WHERE
             uic IS NOT NULL
         AND (
             name LIKE $1
-            OR info_de LIKE $1
-            OR info_en LIKE $1
-            OR info_es LIKE $1
-            OR info_fr LIKE $1
-            OR info_it LIKE $1
-            OR info_nb LIKE $1
-            OR info_nl LIKE $1
-            OR info_cs LIKE $1
-            OR info_da LIKE $1
-            OR info_hu LIKE $1
-            OR info_ja LIKE $1
-            OR info_ko LIKE $1
-            OR info_pl LIKE $1
-            OR info_pt LIKE $1
-            OR info_ru LIKE $1
-            OR info_sv LIKE $1
-            OR info_tr LIKE $1
-            OR info_zh LIKE $1
         )
         ORDER BY
             name
@@ -298,25 +172,7 @@ pub async fn search_by_position(
             uic,
             latitude,
             longitude,
-            country,
-            info_de,
-            info_en,
-            info_es,
-            info_fr,
-            info_it,
-            info_nb,
-            info_nl,
-            info_cs,
-            info_da,
-            info_hu,
-            info_ja,
-            info_ko,
-            info_pl,
-            info_pt,
-            info_ru,
-            info_sv,
-            info_tr,
-            info_zh
+            country
         FROM
             stations
         WHERE
@@ -367,25 +223,7 @@ pub async fn search_by_name_and_position(
             uic,
             latitude,
             longitude,
-            country,
-            info_de,
-            info_en,
-            info_es,
-            info_fr,
-            info_it,
-            info_nb,
-            info_nl,
-            info_cs,
-            info_da,
-            info_hu,
-            info_ja,
-            info_ko,
-            info_pl,
-            info_pt,
-            info_ru,
-            info_sv,
-            info_tr,
-            info_zh
+            country
         FROM
             stations
         WHERE
