@@ -4,7 +4,8 @@ CREATE TABLE stations (
     uic TEXT NOT NULL,
     latitude REAL,
     longitude REAL,
-    country TEXT
+    country TEXT,
+    data JSON
 );
 
 CREATE UNIQUE INDEX stations_id_idx ON stations (id);
