@@ -13,6 +13,7 @@ test-helpers = ["dep:fake", "dep:rand", "dep:tokio"]
 
 [dependencies]
 anyhow = "1.0"
+cargo_metadata = "0.19"
 fake = { version = "4.0", features = ["derive"], optional = true }
 restations-config = { path = "../config" }
 rand = { version = "0.9", optional = true }

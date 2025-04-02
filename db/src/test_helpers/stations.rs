@@ -8,14 +8,13 @@ pub async fn create(station: StationChangeset, db: &DbPool) -> Result<Station, a
     station.validate()?;
 
     let record = sqlx::query!(
-        "INSERT INTO stations (id, name, uic, latitude, longitude, country, country_hint, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id",
+        "INSERT INTO stations (id, name, uic, latitude, longitude, country, info_de, info_en, info_es, info_fr, info_it, info_nb, info_nl, info_cs, info_da, info_hu, info_ja, info_ko, info_pl, info_pt, info_ru, info_sv, info_tr, info_zh) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id",
         station.id,
         station.name,
         station.uic,
         station.latitude,
         station.longitude,
         station.country,
-        station.country_hint,
         station.info_de,
         station.info_en,
         station.info_es,
@@ -45,7 +44,6 @@ pub async fn create(station: StationChangeset, db: &DbPool) -> Result<Station, a
         latitude: station.latitude,
         longitude: station.longitude,
         country: station.country,
-        country_hint: station.country_hint,
         info_de: station.info_de,
         info_en: station.info_en,
         info_es: station.info_es,

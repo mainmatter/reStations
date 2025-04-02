@@ -1,16 +1,20 @@
-name: 'Hello World'
-description: 'Greet someone'
+name: "Hello World"
+description: "Greet someone"
 runs:
   using: "composite"
   steps:
     - uses: actions-rust-lang/setup-rust-toolchain@v1
-    
-    - run: ./scripts/sync-data
+
+    - name: prepare database
+      run: |
+        cargo db create
+        cargo db migrate
+        cargo db sync
       shell: bash
-    
+
     - run: docker build --tag restations .
       shell: bash
-    
+
     - name: Smoke-test to ensure correctness
       run: |
         docker run -d -p 3000:3000 restations

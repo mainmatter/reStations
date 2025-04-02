@@ -1,6 +1,6 @@
 #[cfg(feature = "test-helpers")]
 use fake::{
-    faker::{address::en::*, boolean::en::Boolean, number::en::NumberWithFormat},
+    faker::{address::en::*, number::en::NumberWithFormat},
     Dummy,
 };
 use serde::Deserialize;
@@ -20,7 +20,6 @@ pub struct Station {
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
     pub country: Option<String>,
-    pub country_hint: bool,
     pub info_de: Option<String>,
     pub info_en: Option<String>,
     pub info_es: Option<String>,
@@ -60,8 +59,6 @@ pub struct StationChangeset {
     pub longitude: Option<f64>,
     #[cfg_attr(feature = "test-helpers", dummy(faker = "CountryName()"))]
     pub country: Option<String>,
-    #[cfg_attr(feature = "test-helpers", dummy(faker = "Boolean(1)"))]
-    pub country_hint: bool,
     pub info_de: Option<String>,
     pub info_en: Option<String>,
     pub info_es: Option<String>,
@@ -94,7 +91,6 @@ pub async fn load_all(
             latitude,
             longitude,
             country,
-            country_hint,
             info_de,
             info_en,
             info_es,
@@ -134,7 +130,6 @@ pub async fn load_all_within_limit(
             latitude,
             longitude,
             country,
-            country_hint,
             info_de,
             info_en,
             info_es,
@@ -177,7 +172,6 @@ pub async fn load(
             latitude,
             longitude,
             country,
-            country_hint,
             info_de,
             info_en,
             info_es,
@@ -226,7 +220,6 @@ pub async fn search_by_name(
             latitude,
             longitude,
             country,
-            country_hint,
             info_de,
             info_en,
             info_es,
@@ -306,7 +299,6 @@ pub async fn search_by_position(
             latitude,
             longitude,
             country,
-            country_hint,
             info_de,
             info_en,
             info_es,
@@ -376,7 +368,6 @@ pub async fn search_by_name_and_position(
             latitude,
             longitude,
             country,
-            country_hint,
             info_de,
             info_en,
             info_es,

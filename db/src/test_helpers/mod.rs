@@ -1,4 +1,5 @@
 use crate::{connect_pool, DbPool};
+use cargo_metadata::MetadataCommand;
 use rand::distr::Alphanumeric;
 use rand::{rng, Rng};
 use restations_config::DatabaseConfig;
@@ -41,8 +42,16 @@ async fn prepare_db(config: &DatabaseConfig) -> DatabaseConfig {
         .expect("Failed to get file name of main test database!")
         .to_str()
         .expect("Failed to get file name of main test database!");
-
     let test_db_file_name = build_test_db_file_name(db_file_name);
+
+    let workspace_metadata = MetadataCommand::new()
+        .exec()
+        .expect("Failed to fetch workspace metadata!");
+    let db_file = PathBuf::from_iter([
+        workspace_metadata.workspace_root.to_string().as_str(),
+        db_file_name,
+    ]);
+    println!("{:?}", db_file);
     fs::copy(db_file, test_db_file_name.clone())
         .await
         .expect("Failed to copy test database from main test database!");

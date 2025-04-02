@@ -110,13 +110,20 @@ Support for other `restrictions` request fields for POST /places is [in the work
 
 ## Working with reStations
 
-`reStations` can also be used directly as a Rust project. To run the project, import the data into a local SQLite database first:
+`reStations` can also be used directly as a Rust project. To run the project, prepare the database first:
 
 ```bash
-./scripts/sync-data
+cargo db create
+cargo db migrate
 ```
 
 This is important since reStations uses sqlx which does compile-time checks on the database schema and needs the `DATABASE_URL` environment variable to be able to connect to the database.
+
+To synchronize the data into the local database from the Trainline EU station dataset, run
+
+```
+cargo db sync
+```
 
 Then run the applications from the project root:
 
@@ -156,6 +163,8 @@ cargo run
 Running the application tests:
 
 ```bash
+cargo db create -e test
+cargo db migrate -e test
 cargo test
 ```
 
