@@ -3,7 +3,7 @@ services:
     image: "mediagis/nominatim:5.1"
     restart: always
     environment:
-      PBF_URL: "https://download.geofabrik.de/europe/monaco-latest.osm.pbf"
+      PBF_URL: "https://download.geofabrik.de/europe-latest.osm.pbf"
       REPLICATION_URL: "https://download.geofabrik.de/europe-updates/"
       REVERSE_ONLY: true
       IMPORT_GB_POSTCODES: true
