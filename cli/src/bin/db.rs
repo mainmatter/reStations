@@ -3,12 +3,13 @@ use clap::{Parser, Subcommand};
 use csv_async::{AsyncReaderBuilder, StringRecord, Trim};
 use futures::stream::TryStreamExt;
 use guppy::{Version, VersionReq};
-use reqwest::Client;
+use reqwest::{header::USER_AGENT, Client};
 use restations_cli::util::ui::UI;
 use restations_config::DatabaseConfig;
 use restations_config::{load_config, parse_env, Config, Environment};
+use serde_json::Value;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteConnection};
-use sqlx::{ConnectOptions, Connection};
+use sqlx::{ConnectOptions, Connection, Row};
 use std::path::PathBuf;
 use std::process::{ExitCode, Stdio};
 use tokio::{
@@ -60,6 +61,8 @@ enum Commands {
     Create,
     #[command(about = "Synchronize the database with the source data")]
     Sync,
+    #[command(about = "Augment the data with additional location data")]
+    Augment,
     #[command(about = "Generate query metadata to support offline compile-time verification")]
     Prepare,
 }
@@ -95,6 +98,20 @@ async fn cli(ui: &mut UI<'_>, cli: Cli) -> Result<(), anyhow::Error> {
                     ui.outdent();
                     let stations = stations?;
                     ui.success(&format!("{} stations synchronized.", stations));
+                    Ok(())
+                }
+                Commands::Augment => {
+                    ui.info(&format!("Augmenting {} database…", &cli.env));
+                    ui.indent();
+                    let result = augment(&config)
+                        .await
+                        .context("Could not augment database!");
+                    ui.outdent();
+                    let (augmented_stations, unavailable_stations) = result?;
+                    ui.success(&format!(
+                        "{} stations augmented, no data found for {} stations.",
+                        augmented_stations, unavailable_stations
+                    ));
                     Ok(())
                 }
                 Commands::Prepare => {
@@ -197,9 +214,6 @@ async fn sync(config: &Config) -> Result<i32, anyhow::Error> {
         let record = record.context("Failed to read record from CSV file!")?;
         let station = prepare_station(record, i)?;
 
-        // TODO: get name (all languages), country name (all languages), country code, postcode, city (all languages), display name (all languages), street (all languages)
-        // localhost:8080/reverse?format=jsonv2&lat=48.876742&lon=2.358424&addressdetails=1&namedetails=1
-
         sqlx::query(
             r#"
             INSERT INTO
@@ -231,6 +245,49 @@ async fn sync(config: &Config) -> Result<i32, anyhow::Error> {
     Ok(i)
 }
 
+async fn augment(config: &Config) -> Result<(u32, u32), anyhow::Error> {
+    // TODO: get name (all languages), country name (all languages), country code, postcode, city (all languages), display name (all languages), street (all languages)
+    // localhost:8080/reverse?format=jsonv2&lat=48.876742&lon=2.358424&addressdetails=1&namedetails=1
+
+    let mut conn = get_db_client(&config.database).await;
+    let stations = sqlx::query(
+        r#"
+        SELECT
+            id,
+            latitude,
+            longitude
+        FROM
+            stations;
+        "#,
+    )
+    .fetch_all(&mut conn)
+    .await?;
+
+    let client = Client::new();
+
+    for row in stations {
+        let id = row.get::<i64, usize>(0);
+        let lat = row.get::<f64, usize>(1);
+        let lon = row.get::<f64, usize>(2);
+
+        let data: Value = client
+            .get(format!("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={}&lon={}&namedetails=1&addressdetails=1", lat, lon))
+            .header(USER_AGENT, "reStations 0.1")
+            .send()
+            .await
+            .context(format!("Failed to get metadata for station {}!", id))?
+            .json()
+            .await
+            .context(format!(
+                "Failed to deserialize metadata for station {}!",
+                id
+            ))?;
+        println!("{:?}", data);
+    }
+
+    Ok((0, 0))
+}
+
 fn get_db_config(config: &DatabaseConfig) -> SqliteConnectOptions {
     let db_url = Url::parse(&config.url).expect("Invalid DATABASE_URL!");
     ConnectOptions::from_url(&db_url).expect("Invalid DATABASE_URL!")
@@ -256,17 +313,8 @@ fn prepare_station(record: StringRecord, i: i32) -> Result<StationRecord, anyhow
     let lon = record.get(6);
     let country = record.get(8);
 
-    match (
-        id, name, uic, lat, lon, country
-    ) {
-        (
-            Some(id),
-            Some(name),
-            Some(uic),
-            Some(lat),
-            Some(lon),
-            Some(country),
-        ) => {
+    match (id, name, uic, lat, lon, country) {
+        (Some(id), Some(name), Some(uic), Some(lat), Some(lon), Some(country)) => {
             let id = id
                 .parse::<i64>()
                 .context(format!("Failed to parse ID to i64: {}", id))?;
